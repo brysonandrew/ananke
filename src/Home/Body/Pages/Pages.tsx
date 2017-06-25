@@ -1,145 +1,107 @@
 import * as React from 'react';
+import * as Immutable from 'immutable';
 import * as history from 'history';
 import { connect } from 'react-redux';
 import { IStoreState } from '../../../redux/main_reducer';
-import { contentsList } from "../../../data/content";
+import {contents, contentsList} from "../../../data/content";
 import { IParams, IDictionary } from "../../../data/models";
-import { toggleScrollAnimation, toggleWheel, saveParams } from "../../HomeActionCreators";
-import { toParams} from "../../../data/helpers/toParams";
-import { MotionScroll } from "../../../Widgets/MotionScroll/MotionScroll";
+import { saveParams } from "../../HomeActionCreators";
+import {toParams} from "../../../data/helpers/toParams";
 
 interface IProperties {
-    isMobile?: boolean
-    isTablet?: boolean
-    isLaptop?: boolean
-    isAnimating?: boolean
     savedParams?: IParams
 }
 
-interface ICallbacks {
-    onAnimationEnd?: () => void
-    onWheel?: () => void
-    onWheelStop?: () => void
-    onURLChange?: (nextParams: IParams) => void
-}
+interface ICallbacks {}
 
 interface IProps extends IProperties, ICallbacks {
     history: history.History
+    location: history.Location
 }
 
 interface IState extends IProperties, ICallbacks {
-    docScroll?: number
+    keysPressed: string[]
+    mx: number
+    my: number
 }
 
 export class Pages extends React.Component<IProps, IState> {
 
-    pageOffsetList: number[] = [];
-    pageOffsets: IDictionary<number>;
-    timeoutId;
-    timeoutStopDelay=50;
-    isWheelRecorded=false;
-
     public constructor(props?: any, context?: any) {
         super(props, context);
         this.state = {
-            docScroll: 0
+            keysPressed: [],
+            mx: 0,
+            my: 0
         };
-        this.handleScroll = this.handleScroll.bind(this);
-        this.handleWheel = this.handleWheel.bind(this);
+        this.handleKeyPress = this.handleKeyPress.bind(this);
+        this.handleKeyUp = this.handleKeyUp.bind(this);
+        this.handleMouseMove = this.handleMouseMove.bind(this);
     }
 
     componentDidMount() {
-        this.pageOffsetList = contentsList.map((content, i) => document.getElementById(content.path).offsetTop);
-        this.pageOffsets = this.pageOffsetList.reduce((acc, curr, i) => {
-            acc[contentsList[i].path] = curr;
-            return acc;
-        }, {});
-
-        window.addEventListener("scroll", this.handleScroll);
-        window.addEventListener("wheel", this.handleWheel);
+        window.addEventListener("keypress", this.handleKeyPress);
+        window.addEventListener("keyup", this.handleKeyUp);
+        window.addEventListener("mousemove", this.handleMouseMove);
     }
 
     componentWillUnmount() {
-        window.removeEventListener("scroll", this.handleScroll);
-        window.removeEventListener("wheel", this.handleWheel);
+        window.removeEventListener("keypress", this.handleKeyPress);
+        window.removeEventListener("keyup", this.handleKeyUp);
+        window.removeEventListener("mousemove", this.handleMouseMove);
     }
 
-    handleScroll() {
-        if (!this.props.isAnimating) {
-            this.changePagePathOnScroll();
-        }
-        this.setState({docScroll: document.body.scrollTop});
+    handleKeyPress(e) {
+        const keysPressed = Immutable.List(this.state.keysPressed).push(e.key);
+
+        this.setState({
+            keysPressed: (this.state.keysPressed.indexOf(e.key) > -1) ? this.state.keysPressed : keysPressed.toArray()
+        });
     }
 
-    handleWheel() {
-        if (!this.isWheelRecorded) {
-            this.props.onWheel();
-            this.isWheelRecorded=true;
-        }
-        //detect wheel stop
-        clearTimeout(this.timeoutId);
-        this.timeoutId = setTimeout(() => {
-                this.props.onWheelStop();
-                this.isWheelRecorded=false;
-            },
-        this.timeoutStopDelay);
-        if (this.props.isAnimating) {
-            this.setState({docScroll: document.body.scrollTop});
-        }
+    handleKeyUp(e) {
+        const keysPressedList = Immutable.List(this.state.keysPressed);
+        const nextKeysPressedList = keysPressedList.filter(item => !(item===e.key));
+
+        this.setState({
+            keysPressed: nextKeysPressedList.toArray()
+        });
     }
 
-    changePagePathOnScroll() {
-        const { savedParams } = this.props;
+    handleMouseMove(e) {
+        this.setState({
+            mx: e.pageX,
+            my: e.pageY
+        })
 
-        const approachingPageBuffer = 200;
-        const pagesScrolledPastOffsets = this.pageOffsetList.filter(offset => (offset - approachingPageBuffer) < window.scrollY);
-
-        const currentIndex = (pagesScrolledPastOffsets.length > 0)
-                                ?   pagesScrolledPastOffsets.length - 1
-                                :   -1;
-
-        if (currentIndex > -1 && contentsList[currentIndex].path !== savedParams.activePagePath) {
-            const nextPath = `/${contentsList[currentIndex].path}`;
-            this.props.history.push(nextPath);
-            this.props.onURLChange(toParams(nextPath));
-        }
     }
 
     render(): JSX.Element {
-        const { docScroll } = this.state;
-        const { onAnimationEnd, savedParams, isAnimating } = this.props;
-        const isSelected = "activePagePath" in savedParams;
-        const isOffsetsReady = (this.pageOffsets != null);
-        const isScrollReady = (isSelected && isOffsetsReady);
-
+        const { savedParams, history, location } = this.props;
+        const { keysPressed, my, mx } = this.state;
         const styles = {
             page: {
-                position: "relative",
-                width: `100%`,
-                height: "100vh"
             }
         } as any;
 
+        const activePagePath = savedParams.activePagePath;
+        const component = contents[activePagePath  ? activePagePath : "intro"].component;
+
+        console.log(keysPressed);
+
         return (
             <div>
-                {isScrollReady &&   <MotionScroll
-                                        docScroll={docScroll}
-                                        isAnimating={isAnimating}
-                                        scrollTarget={this.pageOffsets[savedParams.activePagePath]}
-                                        onRest={onAnimationEnd}
-                                    />}
-                {contentsList.map((content, i) =>
-                    <div key={i}
-                         id={content.path}
-                         style={ styles.page }>
-                        {React.cloneElement(
-                            content.component,
-                                {
-                                    offsetTop: this.pageOffsetList[i],
-                                    docScroll: this.state.docScroll
-                                }
-                            )}
-                    </div>)}
+                <div style={ styles.page }>
+                    {React.cloneElement(
+                        component,
+                        {
+                            keysPressed: keysPressed,
+                            mx: mx,
+                            my: my,
+                            history: history
+                        }
+                    )}
+                </div>
             </div>
         );
     }
@@ -150,26 +112,12 @@ export class Pages extends React.Component<IProps, IState> {
 
 function mapStateToProps(state: IStoreState, ownProps: IProps): IProperties {
     return {
-        isMobile: state.homeStore.isMobile,
-        isTablet: state.homeStore.isTablet,
-        isLaptop: state.homeStore.isLaptop,
-        isAnimating: state.homeStore.isAnimating,
         savedParams: state.homeStore.savedParams,
     };
 }
 
 function mapDispatchToProps(dispatch, ownProps: IProps): ICallbacks {
     return {
-        onAnimationEnd: () => {
-            dispatch(toggleScrollAnimation(false));
-        },
-        onWheel: () => {
-            dispatch(toggleWheel(true));
-            dispatch(toggleScrollAnimation(false));
-        },
-        onWheelStop: () => {
-            dispatch(toggleWheel(false));
-        },
         onURLChange: (nextParams) => {
             dispatch(saveParams(nextParams));
         }

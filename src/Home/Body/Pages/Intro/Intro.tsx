@@ -1,23 +1,27 @@
 import * as React from 'react';
+import * as history from 'history';
 import { connect } from 'react-redux';
 import { IStoreState } from '../../../../redux/main_reducer';
 import { IParams } from "../../../../data/models";
 import { IntroHeading } from "./IntroHeading";
+import {saveParams} from "../../../HomeActionCreators";
 
 interface IProperties {
-    isMenuOpen?: boolean
     isMobile?: boolean
     isTablet?: boolean
     isLaptop?: boolean
-    docScroll?: number
     savedParams?: IParams
 }
 
-interface ICallbacks {}
+interface ICallbacks {
+    onURLChange?: (nextParams: IParams) => void
+}
 
 interface IProps extends IProperties, ICallbacks {
-    docScroll?: number
-    offsetTop?: number
+    keysPressed?: string
+    mx?: number
+    my?: number
+    history: history.History
 }
 
 interface IState extends IProperties, ICallbacks {}
@@ -29,9 +33,15 @@ export class Intro extends React.Component<IProps, IState> {
         this.state = {};
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.keysPressed.length > 0) {
+            this.props.history.push("/main");
+            this.props.onURLChange({activePagePath: "main"});
+        }
+    }
+
     render(): JSX.Element {
         const { isMobile, isTablet, isLaptop } = this.props;
-
         const styles = {
             intro: {
                 display: "table",
@@ -65,7 +75,6 @@ export class Intro extends React.Component<IProps, IState> {
 
 function mapStateToProps(state: IStoreState, ownProps: IProps): IProperties {
     return {
-        isMenuOpen: state.homeStore.isMenuOpen,
         isMobile: state.homeStore.isMobile,
         isTablet: state.homeStore.isTablet,
         isLaptop: state.homeStore.isLaptop,
@@ -74,7 +83,11 @@ function mapStateToProps(state: IStoreState, ownProps: IProps): IProperties {
 }
 
 function mapDispatchToProps(dispatch, ownProps: IProps): ICallbacks {
-    return {}
+    return {
+        onURLChange: (nextParams) => {
+            dispatch(saveParams(nextParams));
+        }
+    }
 }
 
 export const IntroFromStore = connect(

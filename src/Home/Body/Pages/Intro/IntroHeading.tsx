@@ -25,7 +25,7 @@ export class IntroHeading extends React.Component<IProps, IState> {
         } as any;
         return (
             <div style={ styles.helloHeading }>
-                <pre>{`H E L L O`}</pre>
+                <pre>{`P R E S S  A N Y  K E Y  T O  B E G I N`}</pre>
             </div>
         );
     }

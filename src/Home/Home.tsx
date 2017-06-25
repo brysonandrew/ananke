@@ -3,9 +3,8 @@ import * as history from 'history';
 import { connect } from 'react-redux';
 import { IParams } from "../data/models";
 import { IStoreState } from '../redux/main_reducer';
-import { changeViewportDimensions, saveLocation, saveParams, toggleScrollAnimation } from './HomeActionCreators';
+import { changeViewportDimensions, saveLocation, saveParams } from './HomeActionCreators';
 import { toParams } from "../data/helpers/toParams";
-import { MenuFromStore } from "./Menu/Menu";
 import { PagesFromStore } from "./Body/Pages/Pages";
 
 interface IProperties {
@@ -25,33 +24,23 @@ interface IProps extends IProperties, ICallbacks {
     history: history.History
 }
 
-interface IState extends IProperties, ICallbacks {
-    isMounted: boolean
-}
+interface IState extends IProperties, ICallbacks {}
 
 export class Home extends React.Component<IProps, IState> {
 
-    timerId;
-
     public constructor(props?: any, context?: any) {
         super(props, context);
-        this.state = {
-            isMounted: false
-        }
     }
 
     componentDidMount() {
-        const { onResizeViewport, onAnimationStart, history } = this.props;
+        const { onResizeViewport, history } = this.props;
 
         const params = toParams(history.location.pathname);
-        if (params["activePagePath"].length > 0) {onAnimationStart()}
 
         this.props.onLoad(
             history.location,
             params
         );
-
-        this.timerId = setTimeout(() => this.setState({ isMounted: true }), 0);
 
         window.addEventListener("resize"
             , () => onResizeViewport(window.innerWidth, window.innerHeight));
@@ -61,23 +50,14 @@ export class Home extends React.Component<IProps, IState> {
 
     render(): JSX.Element {
         const styles = {
-            home: {
-                position: "relative",
-                background: "#eeeeee",
-                overflow: "hidden"
-            },
-            home__pages: {}
+            home: {}
         } as any;
         return (
             <div style={ styles.home }>
-                <div>
-                    <MenuFromStore/>
-                </div>
-                <div style={ styles.home__pages }>
-                    <PagesFromStore
-                        history={this.props.history}
-                    />
-                </div>
+                <PagesFromStore
+                    history={this.props.history}
+                    location={this.props.location}
+                />
             </div>
         );
     }
@@ -98,9 +78,6 @@ function mapDispatchToProps(dispatch, ownProps: IProps): ICallbacks {
         onLoad: (nextLocation, nextParams) => {
             dispatch(saveLocation(nextLocation));
             dispatch(saveParams(nextParams));
-        },
-        onAnimationStart: () => {
-            dispatch(toggleScrollAnimation(true));
         },
         onResizeViewport: (width, height) => {
             dispatch(changeViewportDimensions(width, height));

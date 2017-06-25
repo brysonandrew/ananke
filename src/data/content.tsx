@@ -22,6 +22,8 @@ export const contentsList: IPage[] = [
     )
 ];
 
+export const pagePaths = contentsList.map(content => content.name.toLowerCase());
+
 export const contents: IDictionary<IPage> = contentsList.reduce((acc, curr) => {
     acc[toPath(curr.name)] = curr;
     return acc;

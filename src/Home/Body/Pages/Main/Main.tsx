@@ -1,46 +1,181 @@
 import * as React from 'react';
+import * as history from 'history';
+import THREE = require('three');
+import { isGL } from "../../../../data/helpers/WebGL";
 import { connect } from 'react-redux';
 import { IStoreState } from '../../../../redux/main_reducer';
 import { IParams } from "../../../../data/models";
-import { MainHeading } from "./MainHeading";
+import {animateKey, cameraPositionX, cameraPositionZ, cameraRotationY, isFiring, isMove} from "./controls/keyboard";
+import { loadCylinder } from "./fixtures/cylinder";
+import { loadGround } from "./fixtures/ground";
+import { loadBackground } from "./fixtures/background";
+import { createCar } from "./player/car";
+import {GatlingGun} from "./player/GatlingGun/gatlingGun";
 
 interface IProperties {
-    isMenuOpen?: boolean
+    width?: number
+    height?: number
     isMobile?: boolean
     isTablet?: boolean
     isLaptop?: boolean
-    docScroll?: number
     savedParams?: IParams
 }
 
 interface ICallbacks {}
 
 interface IProps extends IProperties, ICallbacks {
-    docScroll?: number
-    offsetTop?: number
+    keysPressed?: string
+    mx?: number
+    my?: number
+    history: history.History
 }
 
 interface IState extends IProperties, ICallbacks {
+    isFallback: boolean
 }
 
 export class Main extends React.Component<IProps, IState> {
 
+    scene;
+    camera;
+    renderer;
+    animateLoop;
+    controls;
+    cylinder;
+    ground;
+    background;
+    loader;
+    texture;
+    car;
+    gatlingGun = new GatlingGun();
+    playerFocus = new THREE.Group;
+
+
     public constructor(props?: any, context?: any) {
         super(props, context);
         this.state = {
+            isFallback: false
         };
     }
 
-    render(): JSX.Element {
-        const { isMobile, isTablet, isLaptop } = this.props;
+    componentDidMount() {
+        if (isGL())  {
+            this.initGL();
+        } else {
+            this.initGLFallback();
+        }
+    }
 
+    componentWillUnmount() {
+        cancelAnimationFrame(this.animateLoop);
+        if (isGL()) {
+            document.body.removeChild( this.renderer.domElement )
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        const isHeightChanged = nextProps.height !== this.props.height;
+        const isWidthChanged = nextProps.width !== this.props.width;
+
+        if (isHeightChanged || isWidthChanged) {
+            this.renderer.setSize( nextProps.width, nextProps.height );
+            this.camera.aspect = nextProps.width / nextProps.height;
+            this.camera.updateProjectionMatrix();
+        }
+    }
+
+    initGL() {
+        this.initRenderer();
+        this.initCamera();
+        this.initScene();
+        this.initLighting();
+        this.initAssets();
+        this.initPlayerFocus();
+        this.animate();
+    }
+
+    initGLFallback() {
+        this.setState({ isFallback: true })
+    }
+
+    initRenderer() {
+        this.renderer = new THREE.WebGLRenderer();
+        this.renderer.setSize( this.props.width, this.props.height );
+        document.body.appendChild( this.renderer.domElement );
+    }
+
+    initCamera() {
+        this.camera = new THREE.PerspectiveCamera( 45,
+            this.props.width / this.props.height, 1, 4000 );
+
+        this.camera.position.set(0, 5, -100);
+    }
+
+    initScene() {
+        this.scene = new THREE.Scene();
+    }
+
+    initLighting() {
+        const point = new THREE.PointLight( 0xffffff, 1, 100 );
+        point.position.set( 0, 50, 0 );
+        this.scene.add( point );
+
+        const ambient = new THREE.AmbientLight( 0xffffff );
+        this.scene.add( ambient );
+    }
+
+    initAssets() {
+        this.gatlingGun.assemble();
+        this.playerFocus.add(this.gatlingGun.render());
+        this.scene.add(this.gatlingGun.renderBullets());
+
+        Promise.all([
+            loadGround(),
+            loadBackground()
+        ]).then((meshes) => {
+            meshes.map(mesh => this.scene.add(mesh));
+        });
+        createCar().then((car) => this.playerFocus.add(car));
+    }
+
+    initPlayerFocus() {
+        this.scene.add(this.playerFocus);
+    }
+
+    animate() {
+        this.animateLoop = requestAnimationFrame( this.animate.bind(this) );
+        this.renderMotion();
+    }
+
+    renderMotion() {
+        const { keysPressed } = this.props;
+
+        this.playerFocus.rotation.y+=cameraRotationY(keysPressed);
+
+        this.playerFocus.position.z+=cameraPositionZ(keysPressed, this.playerFocus.rotation.y);
+
+        this.playerFocus.position.x+=cameraPositionX(keysPressed, this.playerFocus.rotation.y);
+
+        this.gatlingGun.fire(isFiring(keysPressed), this.playerFocus);
+
+
+        this.camera.lookAt(this.playerFocus.position);
+
+        this.renderer.render( this.scene, this.camera );
+    }
+
+    render(): JSX.Element {
+        // const { isMobile, isTablet, isLaptop } = this.props;
         const styles = {
             world: {
+                position: "absolute",
+                left: 0,
+                top: 0,
                 display: "table",
                 height: "100%",
                 width: "100%"
             },
-            world__inner: {
+            world__noGLMessage: {
                 display: "table-cell",
                 textAlign: "center",
                 verticalAlign: "middle",
@@ -50,15 +185,12 @@ export class Main extends React.Component<IProps, IState> {
         } as any;
 
         return (
-            <div style={ styles.world }>
-                <div style={ styles.world__inner }>
-                    <MainHeading
-                        isMobile={isMobile}
-                        isTablet={isTablet}
-                        isLaptop={isLaptop}
-                    />
+            this.state.isFallback
+            &&  <div style={ styles.main }>
+                    <div style={ styles.world__noGLMessage }>
+                        {"Unable to view due to browser or browser settings. Try another browser or reconfigure your current browser."}
+                    </div>
                 </div>
-            </div>
         );
     }
 }
@@ -67,7 +199,8 @@ export class Main extends React.Component<IProps, IState> {
 
 function mapStateToProps(state: IStoreState, ownProps: IProps): IProperties {
     return {
-        isMenuOpen: state.homeStore.isMenuOpen,
+        width: state.homeStore.width,
+        height: state.homeStore.height,
         isMobile: state.homeStore.isMobile,
         isTablet: state.homeStore.isTablet,
         isLaptop: state.homeStore.isLaptop,
