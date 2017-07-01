@@ -1,5 +1,5 @@
 import THREE = require('three');
-import { loadTexture } from "../loaders/texture";
+import { loadTexture } from "../../../../../data/helpers/loaders/texture";
 
 export const loadCylinder = () => {
     return new Promise((resolve, reject) => {

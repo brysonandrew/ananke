@@ -87,8 +87,6 @@ export class Pages extends React.Component<IProps, IState> {
         const activePagePath = savedParams.activePagePath;
         const component = contents[activePagePath  ? activePagePath : "intro"].component;
 
-        console.log(keysPressed);
-
         return (
             <div>
                 <div style={ styles.page }>

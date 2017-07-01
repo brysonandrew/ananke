@@ -4,6 +4,8 @@ import { toPath } from "./helpers/toPath";
 import { IDictionary } from "./models";
 import { IntroFromStore } from "../Home/Body/Pages/Intro/Intro";
 import { MainFromStore } from "../Home/Body/Pages/Main/Main";
+import { SpotlightFromStore } from "../Home/Body/Projects/Spotlight/Spotlight";
+import { CruisingFromStore } from "../Home/Body/Projects/Cruising/Cruising";
 
 function Page(name, component) {
     this.name= name;
@@ -19,6 +21,14 @@ export const contentsList: IPage[] = [
     new Page(
         "Main",
         <MainFromStore/>
+    ),
+    new Page(
+        "Spotlight",
+        <SpotlightFromStore/>
+    ),
+    new Page(
+        "Cruising",
+        <CruisingFromStore/>
     )
 ];
 

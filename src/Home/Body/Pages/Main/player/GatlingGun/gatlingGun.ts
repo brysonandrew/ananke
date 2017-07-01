@@ -1,6 +1,7 @@
 import THREE = require('three');
 import { createGun } from './gunParts';
-import { easeMotion } from "../../controls/motion";
+import {easeMotion} from "../../../../../../data/helpers/controls/motion";
+import {cameraPositionX, cameraPositionZ, cameraRotationY} from "../../../../../../data/helpers/controls/keyboard";
 
 export class GatlingGun {
 
@@ -13,20 +14,24 @@ export class GatlingGun {
     count = 0;
     barrelTurnRate = 0;
     gunRotateRate = 0;
+    initialY = 9;
+    initialZ = -4;
 
     constructor() {}
 
     assemble() {
         this.gun.add(createGun());
         this.gun.scale.set(0.2,0.2,0.2);
-        this.gun.position.set(0, 9, -4);
+        this.gun.position.set(0, this.initialY, this.initialZ);
         this.gunParts = this.gun.children[0].children;
         this.gunBarrel = this.gunParts[this.gunParts.length - 1];
     }
 
-    addBullet(sourceObject) {
-        const amount = 2;
-        const spread = 2;
+    addBullet(sourceObject, keysPressed) {
+        const amount = 12;
+        const radius = 22;
+        const scatterFwd = 5;
+        const scatterSide = 0.5;
 
         const colors = new Float32Array( amount * 3 );
         const sizes = new Float32Array( amount );
@@ -36,19 +41,18 @@ export class GatlingGun {
 
         const positions = new Float32Array( amount * 3 );
 
+        const rotY = sourceObject.rot.y + cameraRotationY(keysPressed);
+
+        const x = radius * -Math.sin(rotY) + cameraPositionX(keysPressed, rotY) * 2;
+        const z = radius * -Math.cos(rotY) + cameraPositionZ(keysPressed, rotY) * 2;
+
         positions.forEach((_, i) => {
-            const startingPointX = -spread * Math.sin(sourceObject.rotation.y);
-            const startingPointZ = -spread * Math.cos(sourceObject.rotation.y);
-            vertex.x = Math.sin(sourceObject.rotation.y)
-                        * -Math.random()
-                        * spread * 2 - startingPointX;
-            vertex.y = Math.random() *  spread - spread * 0.5;
-            vertex.z = Math.cos(sourceObject.rotation.y)
-                        * -Math.random()
-                        * spread * 2 - startingPointZ;
+            vertex.x = scatterSide * Math.random() * 2 - 1;
+            vertex.y = 0;
+            vertex.z = scatterFwd * Math.random() * 2 - 1;
             vertex.toArray((positions as any), i * 3);
 
-            sizes[i] = spread * 2 + i * 2;
+            sizes[i] = i * 1.5;
 
             color.setHSL(60, 1, 0.95);
             color.toArray((colors as any), i * 3);
@@ -83,47 +87,43 @@ export class GatlingGun {
                                 gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
                             }`,
             blending:       THREE.AdditiveBlending,
-            depthTest:      true, //puts an ugly square around the bullets, but this is necessary or they will appear through the car
+            depthTest:      true,
+            depthWrite:     false,
             transparent:    true
         } );
 
         let bullet = new THREE.Points( geometry, material );
+        bullet["life"] = 0;
 
         bullet.position.set(
-            sourceObject.position.x,
-            sourceObject.position.y + 9,
-            sourceObject.position.z
+            sourceObject.pos.x + x,
+            sourceObject.pos.y + this.initialY,
+            sourceObject.pos.z + z
         );
 
         bullet.rotation.set(
-            sourceObject.rotation.x,
-            sourceObject.rotation.y,
-            sourceObject.rotation.z
+            sourceObject.rot.x,
+            sourceObject.rot.y,
+            sourceObject.rot.z
         );
-
-        bullet["life"] = 0;
 
         this.bullets.add(bullet);
     }
 
     fireBullets() {
-        const bulletSpeed = 10;
-
         this.bullets.children.forEach((bullet, i) => {
-            bullet.position.x -= Math.sin(bullet.rotation.y) * bulletSpeed;
-            bullet.position.z -= Math.cos(bullet.rotation.y) * bulletSpeed;
-            if (bullet["life"] === 500) {
+            if (bullet["life"] === 1) {
                 this.bullets.children.splice(i, 1);
             }
             bullet["life"]++;
         });
     }
 
-    fire(isFiring, sourceObject) {
+    fire(isFiring, sourceObject, keysPressed) {
         this.gunBarrel.rotation.z+=easeMotion(isFiring, 5, 0.25, this.barrelTurnRate);
         this.fireBullets();
         if (isFiring) {
-            this.addBullet(sourceObject);
+            this.addBullet(sourceObject, keysPressed);
         }
     }
 

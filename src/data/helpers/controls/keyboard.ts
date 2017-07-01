@@ -49,5 +49,5 @@ export const cameraRotationY = (keysPressed) => {
 };
 
 export const animateKey = (key, keysPressed, fraction) => {
-    return (keysPressed===key)  ? fraction : 0
+    return isKey(keysPressed, key)  ? fraction : 0
 };

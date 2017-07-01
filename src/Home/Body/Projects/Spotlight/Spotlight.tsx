@@ -8,9 +8,6 @@ import { IParams } from "../../../../data/models";
 import { animateKey, cameraPositionX, cameraPositionZ, cameraRotationY, isFiring, isMove
 } from "../../../../data/helpers/controls/keyboard";
 import { loadGround } from "./fixtures/ground";
-import { loadBackground } from "./fixtures/background";
-import { GatlingGun } from "./player/GatlingGun/gatlingGun";
-import { CenteredText } from "../../../../Widgets/CenteredText";
 
 interface IProperties {
     width?: number
@@ -34,15 +31,13 @@ interface IState extends IProperties, ICallbacks {
     isFallback: boolean
 }
 
-export class Main extends React.Component<IProps, IState> {
+export class Spotlight extends React.Component<IProps, IState> {
 
     scene;
     camera;
     renderer;
     animateLoop;
-    texture;
-    point;
-    gatlingGun = new GatlingGun();
+    light;
     playerFocus = new THREE.Group;
 
     public constructor(props?: any, context?: any) {
@@ -80,10 +75,11 @@ export class Main extends React.Component<IProps, IState> {
 
     initGL() {
         this.initRenderer();
-        this.initScene();
         this.initCamera();
+        this.initScene();
         this.initLighting();
         this.initAssets();
+        this.initPlayerFocus();
         this.animate();
     }
 
@@ -98,8 +94,13 @@ export class Main extends React.Component<IProps, IState> {
     }
 
     initCamera() {
-        this.camera = new THREE.PerspectiveCamera( 45, this.props.width / this.props.height, 1, 4000 );
-        this.camera.position.set(0, 16, 24);
+        this.camera = new THREE.PerspectiveCamera( 45,
+            this.props.width / this.props.height, 1, 4000 );
+
+        this.camera.position.set(0, 400, 0);
+        this.camera.lookAt(this.playerFocus.position);
+
+        this.playerFocus.add(this.camera);
     }
 
     initScene() {
@@ -107,23 +108,21 @@ export class Main extends React.Component<IProps, IState> {
     }
 
     initLighting() {
-        this.point = new THREE.PointLight( 0xffffff, 1 );
-        this.playerFocus.add(this.point);
+        this.light = new THREE.PointLight( 0xffffff, 1, 100 );
+        this.light.position.set( 0, 50, 0 );
+        this.playerFocus.add(this.light);
     }
 
     initAssets() {
-        this.scene.add(this.gatlingGun.renderBullets());
-        this.gatlingGun.assemble();
-        this.playerFocus.add(this.gatlingGun.render());
-        this.playerFocus.add(this.camera);
-        this.scene.add(this.playerFocus);
-
         Promise.all([
-            loadGround(),
-            loadBackground()
+            loadGround()
         ]).then((meshes) => {
             meshes.map(mesh => this.scene.add(mesh));
         });
+    }
+
+    initPlayerFocus() {
+        this.scene.add(this.playerFocus);
     }
 
     animate() {
@@ -134,47 +133,44 @@ export class Main extends React.Component<IProps, IState> {
     renderMotion() {
         const { keysPressed } = this.props;
 
-        const nextPosX = this.playerFocus.position.x + cameraPositionX(keysPressed, this.playerFocus.rotation.y);
-        const nextPosY = this.playerFocus.position.y;
-        const nextPosZ = this.playerFocus.position.z + cameraPositionZ(keysPressed, this.playerFocus.rotation.y);
+        this.playerFocus.rotation.y+=cameraRotationY(keysPressed);
 
-        const nextRotX = this.playerFocus.rotation.x;
-        const nextRotY = this.playerFocus.rotation.y + cameraRotationY(keysPressed);
-        const nextRotZ = this.playerFocus.rotation.z;
+        this.playerFocus.position.z+=cameraPositionZ(keysPressed, this.playerFocus.rotation.y);
 
+        this.playerFocus.position.x+=cameraPositionX(keysPressed, this.playerFocus.rotation.y);
 
-        this.playerFocus.position.x=nextPosX;
-        this.playerFocus.rotation.y=nextRotY;
-        this.playerFocus.position.z=nextPosZ;
+        this.light.intensity = this.light.intensity + animateKey("c", keysPressed, 0.05);
 
         this.renderer.render( this.scene, this.camera );
-
-        const isFiringKey = isFiring(keysPressed);
-
-        const nextCoords = {
-            pos: {
-                x: nextPosX,
-                y: nextPosY,
-                z: nextPosZ
-            },
-            rot: {
-                x: nextRotX,
-                y: nextRotY,
-                z: nextRotZ
-            },
-        };
-
-        this.gatlingGun.fire(isFiringKey, nextCoords, keysPressed);
-
-        this.point.intensity = isFiringKey ? Math.random() * 100 : 0;
     }
 
     render(): JSX.Element {
+        // const { isMobile, isTablet, isLaptop } = this.props;
+        const styles = {
+            world: {
+                position: "absolute",
+                left: 0,
+                top: 0,
+                display: "table",
+                height: "100%",
+                width: "100%"
+            },
+            world__noGLMessage: {
+                display: "table-cell",
+                textAlign: "center",
+                verticalAlign: "middle",
+                height: "100%",
+                width: "100%"
+            }
+        } as any;
+
         return (
             this.state.isFallback
-            &&  <CenteredText
-                    content={"Unable to view due to browser or browser settings. Try another browser or reconfigure your current browser."}
-                />
+            &&  <div style={ styles.main }>
+                    <div style={ styles.world__noGLMessage }>
+                        {"Unable to view due to browser or browser settings. Try another browser or reconfigure your current browser."}
+                    </div>
+                </div>
         );
     }
 }
@@ -196,6 +192,6 @@ function mapDispatchToProps(dispatch, ownProps: IProps): ICallbacks {
     return {}
 }
 
-export const MainFromStore = connect(
+export const SpotlightFromStore = connect(
     mapStateToProps, mapDispatchToProps
-)(Main);
+)(Spotlight);
