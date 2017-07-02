@@ -35,7 +35,7 @@ interface IState extends IProperties, ICallbacks {
     isFallback: boolean
 }
 
-export class Main extends React.Component<IProps, IState> {
+export class Firesword extends React.Component<IProps, IState> {
 
     scene;
     camera;
@@ -146,13 +146,15 @@ export class Main extends React.Component<IProps, IState> {
         this.playerFocus.position.y+=diffPosY;
         this.playerFocus.position.z+=diffPosZ;
 
-        this.playerFocus.rotation.x+=diffRotX;
+        // this.playerFocus.rotation.x+=diffRotX;
         this.playerFocus.rotation.y+=diffRotY;
-        this.playerFocus.rotation.z+=diffRotZ;
+        // this.playerFocus.rotation.z+=diffRotZ;
 
         const isFiringKey = isFiring(keysPressed);
 
-        this.flame.fire(isFiringKey);
+        const sourcePos = this.playerFocus.position;
+
+        this.flame.fire(isFiringKey, sourcePos);
 
         this.point.intensity = isFiringKey ? 1 : 0;
 
@@ -186,6 +188,6 @@ function mapDispatchToProps(dispatch, ownProps: IProps): ICallbacks {
     return {}
 }
 
-export const MainFromStore = connect(
+export const FireswordFromStore = connect(
     mapStateToProps, mapDispatchToProps
-)(Main);
+)(Firesword);

@@ -6,6 +6,8 @@ import { IntroFromStore } from "../Home/Body/Pages/Intro/Intro";
 import { MainFromStore } from "../Home/Body/Pages/Main/Main";
 import { SpotlightFromStore } from "../Home/Body/Projects/Spotlight/Spotlight";
 import { CruisingFromStore } from "../Home/Body/Projects/Cruising/Cruising";
+import { FPSFromStore } from "../Home/Body/Projects/FPS/FPS";
+import { FireswordFromStore } from "../Home/Body/Projects/Firesword/Firesword";
 
 function Page(name, component) {
     this.name= name;
@@ -29,6 +31,14 @@ export const contentsList: IPage[] = [
     new Page(
         "Cruising",
         <CruisingFromStore/>
+    ),
+    new Page(
+        "FPS",
+        <FPSFromStore/>
+    ),
+    new Page(
+        "Firesword",
+        <FireswordFromStore/>
     )
 ];
 

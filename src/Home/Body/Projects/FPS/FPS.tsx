@@ -5,12 +5,11 @@ import { isGL } from "../../../../data/helpers/WebGL";
 import { connect } from 'react-redux';
 import { IStoreState } from '../../../../redux/main_reducer';
 import { IParams } from "../../../../data/models";
-import {
-    playerPositionX, playerPositionZ, playerRotationY, isFiring, playerRotationX
+import { playerPositionX, playerPositionZ, playerRotationY, isFiring
 } from "../../../../data/helpers/controls/keyboard";
 import { loadGround } from "./fixtures/ground";
 import { loadBackground } from "./fixtures/background";
-import { Flame } from "./player/Flame/flame";
+import { GatlingGun } from "./player/GatlingGun/gatlingGun";
 import { CenteredText } from "../../../../Widgets/CenteredText";
 
 interface IProperties {
@@ -35,7 +34,7 @@ interface IState extends IProperties, ICallbacks {
     isFallback: boolean
 }
 
-export class Main extends React.Component<IProps, IState> {
+export class FPS extends React.Component<IProps, IState> {
 
     scene;
     camera;
@@ -43,7 +42,7 @@ export class Main extends React.Component<IProps, IState> {
     animateLoop;
     texture;
     point;
-    flame = new Flame();
+    gatlingGun = new GatlingGun();
     playerFocus = new THREE.Group;
 
     public constructor(props?: any, context?: any) {
@@ -100,7 +99,7 @@ export class Main extends React.Component<IProps, IState> {
 
     initCamera() {
         this.camera = new THREE.PerspectiveCamera( 45, this.props.width / this.props.height, 1, 4000 );
-        this.camera.position.set(0, 16, 50);
+        this.camera.position.set(0, 16, 24);
     }
 
     initScene() {
@@ -113,9 +112,10 @@ export class Main extends React.Component<IProps, IState> {
     }
 
     initAssets() {
-        this.scene.add(this.flame.renderFire());
+        this.scene.add(this.gatlingGun.renderBullets());
+        this.gatlingGun.assemble();
+        this.playerFocus.add(this.gatlingGun.render());
         this.playerFocus.add(this.camera);
-        this.playerFocus.rotation.order = "YXZ";
         this.scene.add(this.playerFocus);
 
         Promise.all([
@@ -134,29 +134,39 @@ export class Main extends React.Component<IProps, IState> {
     renderMotion() {
         const { keysPressed } = this.props;
 
-        const diffPosX = playerPositionX(keysPressed, this.playerFocus.rotation.y);
-        const diffPosY = 0;
-        const diffPosZ = playerPositionZ(keysPressed, this.playerFocus.rotation.y);
+        const nextPosX = this.playerFocus.position.x + playerPositionX(keysPressed, this.playerFocus.rotation.y);
+        const nextPosY = this.playerFocus.position.y;
+        const nextPosZ = this.playerFocus.position.z + playerPositionZ(keysPressed, this.playerFocus.rotation.y);
 
-        const diffRotX = playerRotationX(keysPressed);
-        const diffRotY = playerRotationY(keysPressed);
-        const diffRotZ = 0;
+        const nextRotX = this.playerFocus.rotation.x;
+        const nextRotY = this.playerFocus.rotation.y + playerRotationY(keysPressed);
+        const nextRotZ = this.playerFocus.rotation.z;
 
-        this.playerFocus.position.x+=diffPosX;
-        this.playerFocus.position.y+=diffPosY;
-        this.playerFocus.position.z+=diffPosZ;
 
-        this.playerFocus.rotation.x+=diffRotX;
-        this.playerFocus.rotation.y+=diffRotY;
-        this.playerFocus.rotation.z+=diffRotZ;
+        this.playerFocus.position.x=nextPosX;
+        this.playerFocus.rotation.y=nextRotY;
+        this.playerFocus.position.z=nextPosZ;
+
+        this.renderer.render( this.scene, this.camera );
 
         const isFiringKey = isFiring(keysPressed);
 
-        this.flame.fire(isFiringKey);
+        const nextCoords = {
+            pos: {
+                x: nextPosX,
+                y: nextPosY,
+                z: nextPosZ
+            },
+            rot: {
+                x: nextRotX,
+                y: nextRotY,
+                z: nextRotZ
+            },
+        };
 
-        this.point.intensity = isFiringKey ? 1 : 0;
+        this.gatlingGun.fire(isFiringKey, nextCoords, keysPressed);
 
-        this.renderer.render( this.scene, this.camera );
+        this.point.intensity = isFiringKey ? Math.random() * 100 : 0;
     }
 
     render(): JSX.Element {
@@ -186,6 +196,6 @@ function mapDispatchToProps(dispatch, ownProps: IProps): ICallbacks {
     return {}
 }
 
-export const MainFromStore = connect(
+export const FPSFromStore = connect(
     mapStateToProps, mapDispatchToProps
-)(Main);
+)(FPS);

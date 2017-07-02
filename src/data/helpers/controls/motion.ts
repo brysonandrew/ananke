@@ -14,3 +14,31 @@ export const easeMotion = (isActive, peak, incRate, currRate) => {
     }
     return currRate
 };
+
+export const linearize = (n, origin, target) => {
+    return origin * (n / 100)  + (target - target * n / 100)
+};
+
+let spring = .4,
+    friction = .8,
+    easing = .1;
+    // vy = 0;
+    // sy = 100,
+    // dy = 200;
+
+export const elastic = (isActive, dy, sy, vy) => {
+
+    if (!isActive) {
+
+        vy = vy + (dy - sy) * spring;
+        sy = sy +  (vy *= friction)
+
+    } else {
+
+        sy = sy + (dy - sy) * easing
+
+    }
+
+    return sy;
+
+};

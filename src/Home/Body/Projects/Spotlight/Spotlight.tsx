@@ -5,7 +5,7 @@ import { isGL } from "../../../../data/helpers/WebGL";
 import { connect } from 'react-redux';
 import { IStoreState } from '../../../../redux/main_reducer';
 import { IParams } from "../../../../data/models";
-import { animateKey, cameraPositionX, cameraPositionZ, cameraRotationY, isFiring, isMove
+import { animateKey, playerPositionX, playerPositionZ, playerRotationY, isFiring, isMove
 } from "../../../../data/helpers/controls/keyboard";
 import { loadGround } from "./fixtures/ground";
 
@@ -133,11 +133,11 @@ export class Spotlight extends React.Component<IProps, IState> {
     renderMotion() {
         const { keysPressed } = this.props;
 
-        this.playerFocus.rotation.y+=cameraRotationY(keysPressed);
+        this.playerFocus.rotation.y+=playerRotationY(keysPressed);
 
-        this.playerFocus.position.z+=cameraPositionZ(keysPressed, this.playerFocus.rotation.y);
+        this.playerFocus.position.z+=playerPositionZ(keysPressed, this.playerFocus.rotation.y);
 
-        this.playerFocus.position.x+=cameraPositionX(keysPressed, this.playerFocus.rotation.y);
+        this.playerFocus.position.x+=playerPositionX(keysPressed, this.playerFocus.rotation.y);
 
         this.light.intensity = this.light.intensity + animateKey("c", keysPressed, 0.05);
 
