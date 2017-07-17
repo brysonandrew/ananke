@@ -16,7 +16,7 @@ addComponentCSS({
         body {
             position: relative;
             min-width: 320px;
-            background: #fafafa;
+            background: #212121;
             color: #311B92;
         }
 
@@ -26,11 +26,7 @@ addComponentCSS({
             outline: none;
             text-decoration: none;
         }
-        
-        p {
-            margin: 2vh 0;
-        }
-        
+
         h1, h2, h3, h4 {
             font-family: 'Carrois Gothic', 'arial', sans-serif;
         }

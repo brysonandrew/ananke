@@ -1,6 +1,6 @@
 import THREE = require('three');
 
-export class Flame {
+export class RandomSparks {
 
     flame = new THREE.Group;
     initCount = 0;
@@ -69,9 +69,6 @@ export class Flame {
 
         let fire = new THREE.Points( geometry, material );
         fire["life"] = 0;
-        fire["randomX"] = (Math.random() * 2 - 1) * 0.25;
-        fire["randomY"] = (Math.random() * 2 - 1) * 0.25;
-        fire["randomZ"] = (Math.random() * 2 - 1) * 0.25;
 
         // fire.position.set(
         //     this.flame.position.x,
@@ -89,15 +86,15 @@ export class Flame {
     }
 
     spark() {
-        const maxIterations = 150;
+        const maxIterations = 50;
         const maxLife = Math.PI * 2;
-        const gravity = 0.025;
 
         this.flame.children.forEach((fire, i) => {
 
-            fire.position.x += fire["randomX"];
-            fire.position.y += fire["randomY"] - gravity * fire["life"];
-            fire.position.z += fire["randomZ"];
+            fire.position.x += Math.tan(fire["life"]) * Math.random();
+            fire.position.y += Math.tan(fire["life"]) * Math.random();
+            fire.position.z += Math.tan(fire["life"]) * Math.random();
+
 
             if (fire["life"] > maxLife) {
                 this.flame.children.splice(i, 1);
@@ -107,34 +104,15 @@ export class Flame {
         });
     }
 
-    fire(isFiring) {
+    explode(isActive) {
 
         this.spark();
-        if (isFiring) {
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
+        if (isActive) {
             this.addFire();
         }
     }
 
-    renderFire() {
+    render() {
         return this.flame
     }
 }

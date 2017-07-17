@@ -10,9 +10,8 @@ import {
 } from "../../../../data/helpers/controls/keyboard";
 import { loadGround } from "./fixtures/ground";
 import { loadBackground } from "./fixtures/background";
+import { Flame } from "./player/Flame/flame";
 import { CenteredText } from "../../../../Widgets/CenteredText";
-// import { GatlingGun } from "./player/GatlingGun/gatlingGun";
-import { Uzi } from "./player/Uzi/uzi";
 
 
 interface IProperties {
@@ -37,7 +36,7 @@ interface IState extends IProperties, ICallbacks {
     isFallback: boolean
 }
 
-export class Main extends React.Component<IProps, IState> {
+export class Armoury extends React.Component<IProps, IState> {
 
     scene;
     camera;
@@ -45,9 +44,8 @@ export class Main extends React.Component<IProps, IState> {
     animateLoop;
     texture;
     point;
+    flame = new Flame();
     playerFocus = new THREE.Group;
-    // gatlingGun = new GatlingGun();
-    gun = new Uzi();
 
     public constructor(props?: any, context?: any) {
         super(props, context);
@@ -111,21 +109,15 @@ export class Main extends React.Component<IProps, IState> {
     }
 
     initLighting() {
-        this.point = new THREE.PointLight( 0xffffff, 0.5 );
+        this.point = new THREE.PointLight( 0xffffff, 1 );
         this.playerFocus.add(this.point);
-        this.scene.add(new THREE.AmbientLight( 0xffffff, 0.1 ));
     }
 
     initAssets() {
-        // this.gatlingGun.assemble();
-        // this.scene.add(this.gatlingGun.render());
-        this.gun.assemble();
-        this.scene.add(this.gun.render());
+        this.scene.add(this.flame.renderFire());
         this.playerFocus.add(this.camera);
         this.playerFocus.rotation.order = "YXZ";
         this.scene.add(this.playerFocus);
-
-
 
         Promise.all([
             loadGround(),
@@ -155,11 +147,17 @@ export class Main extends React.Component<IProps, IState> {
         this.playerFocus.position.y+=diffPosY;
         this.playerFocus.position.z+=diffPosZ;
 
-        this.playerFocus.rotation.x+=diffRotX;
+        // this.playerFocus.rotation.x+=diffRotX;
         this.playerFocus.rotation.y+=diffRotY;
-        this.playerFocus.rotation.z+=diffRotZ;
+        // this.playerFocus.rotation.z+=diffRotZ;
 
-        // this.point.intensity = isFiringKey ? 1 : 0;
+        const isFiringKey = isFiring(keysPressed);
+
+        const sourcePos = this.playerFocus.position;
+
+        this.flame.fire(isFiringKey, sourcePos);
+
+        this.point.intensity = isFiringKey ? 1 : 0;
 
         this.renderer.render( this.scene, this.camera );
     }
@@ -191,6 +189,6 @@ function mapDispatchToProps(dispatch, ownProps: IProps): ICallbacks {
     return {}
 }
 
-export const MainFromStore = connect(
+export const ArmouryFromStore = connect(
     mapStateToProps, mapDispatchToProps
-)(Main);
+)(Armoury);

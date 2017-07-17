@@ -3,16 +3,19 @@ import * as Immutable from 'immutable';
 import * as history from 'history';
 import { connect } from 'react-redux';
 import { IStoreState } from '../../../redux/main_reducer';
-import {contents, contentsList} from "../../../data/content";
+import { contents, contentsList } from "../../../data/content";
 import { IParams, IDictionary } from "../../../data/models";
 import { saveParams } from "../../HomeActionCreators";
-import {toParams} from "../../../data/helpers/toParams";
+import { toParams } from "../../../data/helpers/toParams";
+import { MenuFromStore } from "../../Menu/Menu";
 
 interface IProperties {
     savedParams?: IParams
 }
 
-interface ICallbacks {}
+interface ICallbacks {
+    onLocationListen?: (nextParams: IParams) => void
+}
 
 interface IProps extends IProperties, ICallbacks {
     history: history.History
@@ -23,16 +26,20 @@ interface IState extends IProperties, ICallbacks {
     keysPressed: string[]
     mx: number
     my: number
+    isMounted: boolean
 }
 
 export class Pages extends React.Component<IProps, IState> {
+
+    timeoutId;
 
     public constructor(props?: any, context?: any) {
         super(props, context);
         this.state = {
             keysPressed: [],
             mx: 0,
-            my: 0
+            my: 0,
+            isMounted: false
         };
         this.handleKeyPress = this.handleKeyPress.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
@@ -40,12 +47,24 @@ export class Pages extends React.Component<IProps, IState> {
     }
 
     componentDidMount() {
+        const{ onLocationListen } = this.props;
+
+
+        this.props.history.listen( location =>  {
+            onLocationListen(toParams(location.pathname));
+        });
+
+        this.timeoutId = setTimeout(() => this.setState({ isMounted: true }), 0);
+
         window.addEventListener("keypress", this.handleKeyPress);
         window.addEventListener("keyup", this.handleKeyUp);
         window.addEventListener("mousemove", this.handleMouseMove);
     }
 
     componentWillUnmount() {
+
+        clearTimeout(this.timeoutId);
+
         window.removeEventListener("keypress", this.handleKeyPress);
         window.removeEventListener("keyup", this.handleKeyUp);
         window.removeEventListener("mousemove", this.handleMouseMove);
@@ -76,11 +95,26 @@ export class Pages extends React.Component<IProps, IState> {
 
     }
 
+    handlePagesMenuClick(i) {
+        const pagePath = contentsList[i].path;
+        this.props.history.push(`/${pagePath}`);
+    }
+
     render(): JSX.Element {
-        const { savedParams, history, location } = this.props;
-        const { keysPressed, my, mx } = this.state;
+        const { savedParams, history } = this.props;
+        const { keysPressed, my, mx, isMounted } = this.state;
         const styles = {
-            page: {
+            pages: {
+                position: "relative"
+            },
+            pages__menu: {
+                position: "absolute",
+                top: 0,
+                left: 0,
+                opacity: isMounted ? 1 : 0
+            },
+            pages__page: {
+
             }
         } as any;
 
@@ -88,8 +122,13 @@ export class Pages extends React.Component<IProps, IState> {
         const component = contents[activePagePath  ? activePagePath : "intro"].component;
 
         return (
-            <div>
-                <div style={ styles.page }>
+            <div style={ styles.pages }>
+                <div style={ styles.pages__menu }>
+                    <MenuFromStore
+                        onClick={this.handlePagesMenuClick.bind(this)}
+                    />
+                </div>
+                <div style={ styles.pages__page }>
                     {React.cloneElement(
                         component,
                         {
@@ -116,7 +155,7 @@ function mapStateToProps(state: IStoreState, ownProps: IProps): IProperties {
 
 function mapDispatchToProps(dispatch, ownProps: IProps): ICallbacks {
     return {
-        onURLChange: (nextParams) => {
+        onLocationListen: (nextParams) => {
             dispatch(saveParams(nextParams));
         }
     }

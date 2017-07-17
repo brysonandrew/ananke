@@ -1,17 +1,35 @@
 import THREE = require('three');
+import { createGun } from './gunParts';
+import { easeMotion } from "../../../../../data/helpers/controls/motion";
 import { playerPositionX, playerPositionZ, playerRotationY } from "../../../../../data/helpers/controls/keyboard";
 
-export class Flame {
+export class GatlingGun {
 
-    flame = new THREE.Group;
+    gun = new THREE.Group;
+    bullets = new THREE.Group;
+    gunParts;
+    gunBarrel;
+    warmUp = 0;
+    rate = 0;
+    count = 0;
+    barrelTurnRate = 0;
+    gunRotateRate = 0;
     initialY = 9;
-    posX;
-    posZ;
+    initialZ = -4;
 
     constructor() {}
 
-    addFire(sourceObject, keysPressed) {
+    assemble() {
+        this.gun.add(createGun());
+        this.gun.scale.set(0.2,0.2,0.2);
+        this.gun.position.set(0, this.initialY, this.initialZ);
+        this.gunParts = this.gun.children[0].children;
+        this.gunBarrel = this.gunParts[this.gunParts.length - 1];
+    }
+
+    addBullet(sourceObject, keysPressed) {
         const amount = 12;
+        const radius = 22;
         const scatterFwd = 5;
         const scatterSide = 0.5;
 
@@ -23,6 +41,11 @@ export class Flame {
 
         const positions = new Float32Array( amount * 3 );
 
+        const rotY = sourceObject.rot.y + playerRotationY(keysPressed);
+
+        const x = radius * -Math.sin(rotY) + playerPositionX(keysPressed, rotY) * 2;
+        const z = radius * -Math.cos(rotY) + playerPositionZ(keysPressed, rotY) * 2;
+
         positions.forEach((_, i) => {
             vertex.x = scatterSide * Math.random() * 2 - 1;
             vertex.y = 0;
@@ -31,7 +54,7 @@ export class Flame {
 
             sizes[i] = i * 1.5;
 
-            color.setHSL(0, 1, 0.6);
+            color.setHSL(60, 1, 0.95);
             color.toArray((colors as any), i * 3);
         });
 
@@ -69,52 +92,46 @@ export class Flame {
             transparent:    true
         } );
 
-        let fire = new THREE.Points( geometry, material );
-        fire["life"] = 0;
+        let bullet = new THREE.Points( geometry, material );
+        bullet["life"] = 0;
 
-        fire.position.set(
-            sourceObject.pos.x + this.posX,
+        bullet.position.set(
+            sourceObject.pos.x + x,
             sourceObject.pos.y + this.initialY,
-            sourceObject.pos.z + this.posZ
+            sourceObject.pos.z + z
         );
 
-        fire.rotation.set(
+        bullet.rotation.set(
             sourceObject.rot.x,
             sourceObject.rot.y,
             sourceObject.rot.z
         );
 
-        this.flame.add(fire);
+        this.bullets.add(bullet);
     }
 
-    fireBullets(keysPressed, sourceObject) {
-        const radius = 11;
-
-        const rotY = sourceObject.rot.y + playerRotationY(keysPressed);
-
-        this.flame.children.forEach((bullet, i) => {
-
-            this.posX = radius * (bullet["life"] * 0.125) * -Math.sin(rotY) + playerPositionX(keysPressed, rotY) * 2;
-            this.posZ = radius * (bullet["life"] * 0.125) * -Math.cos(rotY) + playerPositionZ(keysPressed, rotY) * 2;
-
-            bullet.position.x += this.posX;
-            bullet.position.z += this.posZ;
-
-            if (bullet["life"] === 50) {
-                this.flame.children.splice(i, 1);
+    fireBullets() {
+        this.bullets.children.forEach((bullet, i) => {
+            if (bullet["life"] === 1) {
+                this.bullets.children.splice(i, 1);
             }
             bullet["life"]++;
         });
     }
 
     fire(isFiring, sourceObject, keysPressed) {
-        this.fireBullets(keysPressed, sourceObject);
+        this.gunBarrel.rotation.z+=easeMotion(isFiring, 5, 0.25, this.barrelTurnRate);
+        this.fireBullets();
         if (isFiring) {
-            this.addFire(sourceObject, keysPressed);
+            this.addBullet(sourceObject, keysPressed);
         }
     }
 
-    renderFire() {
-        return this.flame
+    render() {
+        return this.gun;
+    }
+
+    renderBullets() {
+        return this.bullets
     }
 }

@@ -1,17 +1,23 @@
 import THREE = require('three');
+import {
+    playerPositionX, playerPositionZ, playerRotationX,
+    playerRotationY
+} from "../../../../../../data/helpers/controls/keyboard";
 
 export class Flame {
 
     flame = new THREE.Group;
-    initCount = 0;
+    initialY = 9;
+    posX;
+    posY;
+    posZ;
 
-    constructor() {
-        this.flame.rotation.y = Math.PI;
-        this.flame.rotation.z = Math.PI * 0.125;
-    }
+    constructor() {}
 
-    addFire() {
-        const amount = 1;
+    addFire(sourceObject, keysPressed) {
+        const amount = 12;
+        const scatterFwd = 5;
+        const scatterSide = 0.5;
 
         const colors = new Float32Array( amount * 3 );
         const sizes = new Float32Array( amount );
@@ -22,12 +28,12 @@ export class Flame {
         const positions = new Float32Array( amount * 3 );
 
         positions.forEach((_, i) => {
-            vertex.x = 0;
+            vertex.x = scatterSide * Math.random() * 2 - 1;
             vertex.y = 0;
-            vertex.z = 0;
+            vertex.z = scatterFwd * Math.random() * 2 - 1;
             vertex.toArray((positions as any), i * 3);
 
-            sizes[i] = i * 0.1 + 2;
+            sizes[i] = i * 1.5;
 
             color.setHSL(0, 1, 0.6);
             color.toArray((colors as any), i * 3);
@@ -70,53 +76,63 @@ export class Flame {
         let fire = new THREE.Points( geometry, material );
         fire["life"] = 0;
 
-        // fire.position.set(
-        //     this.flame.position.x,
-        //     this.flame.position.y,
-        //     this.flame.position.z
-        // );
+        fire.position.set(
+            sourceObject.pos.x + this.posX,
+            sourceObject.pos.y + this.posY + this.initialY,
+            sourceObject.pos.z + this.posZ
+        );
 
-        // fire.rotation.set(
-        //     this.flame.rotation.x,
-        //     this.flame.rotation.y,
-        //     this.flame.rotation.z
-        // );
+        fire.rotation.set(
+            sourceObject.rot.x,
+            sourceObject.rot.y,
+            sourceObject.rot.z
+        );
 
         this.flame.add(fire);
     }
 
-    spark() {
-        const maxIterations = 50;
-        const maxLife = Math.PI * 2;
-
-        this.flame.children.forEach((fire, i) => {
-
-            fire.position.x += Math.tan(fire["life"]) * Math.random();
-            fire.position.y += Math.tan(fire["life"]) * Math.random();
-            fire.position.z += Math.tan(fire["life"]) * Math.random();
+    fireBullets(keysPressed, sourceCoords) {
+        const radius = 11;
 
 
-            if (fire["life"] > maxLife) {
+        const rotYOffset = playerRotationY(keysPressed);
+        const rotXOffset = playerRotationX(keysPressed);
+
+        const rotY = sourceCoords.rot.y + rotYOffset;
+        const rotX = sourceCoords.rot.x + rotXOffset;
+
+        const posXOffset = playerPositionX(keysPressed, rotY) * 2;
+        const posZOffset = playerPositionZ(keysPressed, rotY) * 2;
+
+        this.flame.children.forEach((bullet, i) => {
+
+            this.posX = -radius
+                            * (bullet["life"] * 0.125)
+                            * (Math.sin(rotY) + posXOffset)
+                            * Math.cos(rotX);
+            this.posY = radius
+                            * (bullet["life"] * 0.125)
+                            * Math.sin(rotX);
+            this.posZ = -radius
+                            * (bullet["life"] * 0.125)
+                            * (Math.cos(rotY) + posZOffset)
+                            * Math.cos(rotX);
+
+            bullet.position.x += this.posX;
+            bullet.position.y += this.posY;
+            bullet.position.z += this.posZ;
+
+            if (bullet["life"] === 50) {
                 this.flame.children.splice(i, 1);
             }
-
-            fire["life"] += maxLife / maxIterations;
+            bullet["life"]++;
         });
     }
 
-    fire(isFiring, sourcePos) {
-
-        this.flame.position.x = sourcePos.x;
-        this.flame.position.y = sourcePos.y;
-        this.flame.position.z = sourcePos.z;
-
-        // this.flame.rotation.x += coordDiffs.rot.x;
-        // this.flame.rotation.y += coordDiffs.rot.y;
-        // this.flame.rotation.z += coordDiffs.rot.z;
-
-        this.spark();
+    fire(isFiring, sourceCoords, keysPressed) {
+        this.fireBullets(keysPressed, sourceCoords);
         if (isFiring) {
-            this.addFire();
+            this.addFire(sourceCoords, keysPressed);
         }
     }
 

@@ -15,8 +15,9 @@ export interface IParams {
     activeViewPath?: string
 }
 
-export interface IPage {
+export interface IProject {
     name: string
     path: string
-    component: JSX.Element
+    component: any
+    subComponents?: any[]
 }

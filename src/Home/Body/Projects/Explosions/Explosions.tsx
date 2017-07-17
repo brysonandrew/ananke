@@ -6,14 +6,13 @@ import { connect } from 'react-redux';
 import { IStoreState } from '../../../../redux/main_reducer';
 import { IParams } from "../../../../data/models";
 import {
-    playerPositionX, playerPositionZ, playerRotationY, isFiring, playerRotationX
+    playerPositionX, playerPositionZ, playerRotationY, playerRotationX, isFiring
 } from "../../../../data/helpers/controls/keyboard";
 import { loadGround } from "./fixtures/ground";
 import { loadBackground } from "./fixtures/background";
 import { CenteredText } from "../../../../Widgets/CenteredText";
-// import { GatlingGun } from "./player/GatlingGun/gatlingGun";
-import { Uzi } from "./player/Uzi/uzi";
-
+import { explosionsMenuDictionary, explosionsMenuItemList } from "./explosionsMenu/explosionsMenu";
+import { Link } from "react-router-dom";
 
 interface IProperties {
     width?: number
@@ -37,7 +36,7 @@ interface IState extends IProperties, ICallbacks {
     isFallback: boolean
 }
 
-export class Main extends React.Component<IProps, IState> {
+export class Explosions extends React.Component<IProps, IState> {
 
     scene;
     camera;
@@ -46,8 +45,7 @@ export class Main extends React.Component<IProps, IState> {
     texture;
     point;
     playerFocus = new THREE.Group;
-    // gatlingGun = new GatlingGun();
-    gun = new Uzi();
+    explosion;
 
     public constructor(props?: any, context?: any) {
         super(props, context);
@@ -72,13 +70,23 @@ export class Main extends React.Component<IProps, IState> {
     }
 
     componentWillReceiveProps(nextProps) {
-        const isHeightChanged = nextProps.height !== this.props.height;
-        const isWidthChanged = nextProps.width !== this.props.width;
+        const { height, width, savedParams } = this.props;
+
+        const isHeightChanged = nextProps.height !== height;
+        const isWidthChanged = nextProps.width !== width;
 
         if (isHeightChanged || isWidthChanged) {
             this.renderer.setSize( nextProps.width, nextProps.height );
             this.camera.aspect = nextProps.width / nextProps.height;
             this.camera.updateProjectionMatrix();
+        }
+
+        const isViewPathChanged = nextProps.savedParams.activeViewPath !== savedParams.activeViewPath;
+
+        if (isViewPathChanged) {
+            console.log(this.scene);
+            this.removeByName("explosion");
+            this.initExplosion(nextProps.savedParams.activeViewPath);
         }
     }
 
@@ -117,15 +125,12 @@ export class Main extends React.Component<IProps, IState> {
     }
 
     initAssets() {
-        // this.gatlingGun.assemble();
-        // this.scene.add(this.gatlingGun.render());
-        this.gun.assemble();
-        this.scene.add(this.gun.render());
+
         this.playerFocus.add(this.camera);
         this.playerFocus.rotation.order = "YXZ";
         this.scene.add(this.playerFocus);
 
-
+        this.initExplosion(this.props.savedParams.activeViewPath);
 
         Promise.all([
             loadGround(),
@@ -135,13 +140,31 @@ export class Main extends React.Component<IProps, IState> {
         });
     }
 
+    removeByName(name) {
+        const obj = this.scene.getObjectByName(name);
+        this.scene.remove(obj);
+    }
+
+    initExplosion(viewPath) {
+
+        const key = viewPath
+                        ?   viewPath
+                        :   "basic";
+
+        this.explosion = explosionsMenuDictionary[key].component;
+        let explosionObj = this.explosion.render();
+        explosionObj.name =  "explosion";
+
+        this.scene.add(explosionObj);
+    }
+
     animate() {
         this.animateLoop = requestAnimationFrame( this.animate.bind(this) );
         this.renderMotion();
     }
 
     renderMotion() {
-        const { keysPressed } = this.props;
+        const { keysPressed, savedParams } = this.props;
 
         const diffPosX = playerPositionX(keysPressed, this.playerFocus.rotation.y);
         const diffPosY = 0;
@@ -159,17 +182,27 @@ export class Main extends React.Component<IProps, IState> {
         this.playerFocus.rotation.y+=diffRotY;
         this.playerFocus.rotation.z+=diffRotZ;
 
+        const isFiringKey = isFiring(keysPressed);
+
+        this.explosion.explode(isFiringKey);
+
         // this.point.intensity = isFiringKey ? 1 : 0;
 
         this.renderer.render( this.scene, this.camera );
     }
 
     render(): JSX.Element {
+        const styles = {
+            explosions__menu: {
+
+            }
+        };
         return (
             this.state.isFallback
-            &&  <CenteredText
+            ?  <CenteredText
                     content={"Unable to view due to browser or browser settings. Try another browser or reconfigure your current browser."}
                 />
+            :   null
         );
     }
 }
@@ -191,6 +224,6 @@ function mapDispatchToProps(dispatch, ownProps: IProps): ICallbacks {
     return {}
 }
 
-export const MainFromStore = connect(
+export const ExplosionsFromStore = connect(
     mapStateToProps, mapDispatchToProps
-)(Main);
+)(Explosions);

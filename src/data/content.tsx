@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { IPage } from './models';
+import { IProject } from './models';
 import { toPath } from "./helpers/toPath";
 import { IDictionary } from "./models";
 import { IntroFromStore } from "../Home/Body/Pages/Intro/Intro";
@@ -7,44 +7,52 @@ import { MainFromStore } from "../Home/Body/Pages/Main/Main";
 import { SpotlightFromStore } from "../Home/Body/Projects/Spotlight/Spotlight";
 import { CruisingFromStore } from "../Home/Body/Projects/Cruising/Cruising";
 import { FPSFromStore } from "../Home/Body/Projects/FPS/FPS";
-import { FireswordFromStore } from "../Home/Body/Projects/Firesword/Firesword";
+import { ExplosionsFromStore } from "../Home/Body/Projects/Explosions/Explosions";
+import { ArmouryFromStore } from "../Home/Body/Projects/Armoury/Armoury";
+import {explosionsMenuItemList} from "../Home/Body/Projects/Explosions/explosionsMenu/explosionsMenu";
 
-function Page(name, component) {
+function Project(name, component, subComponents?) {
     this.name= name;
     this.path= toPath(this.name);
+    this.subComponents= subComponents;
     this.component= component;
 }
 
-export const contentsList: IPage[] = [
-    new Page(
+export const contentsList: IProject[] = [
+    new Project(
         "Intro",
         <IntroFromStore/>
     ),
-    new Page(
+    new Project(
         "Main",
         <MainFromStore/>
     ),
-    new Page(
+    new Project(
         "Spotlight",
         <SpotlightFromStore/>
     ),
-    new Page(
+    new Project(
         "Cruising",
         <CruisingFromStore/>
     ),
-    new Page(
+    new Project(
         "FPS",
         <FPSFromStore/>
     ),
-    new Page(
-        "Firesword",
-        <FireswordFromStore/>
+    new Project(
+        "Explosions",
+        <ExplosionsFromStore/>,
+        explosionsMenuItemList
+    ),
+    new Project(
+        "Armoury",
+        <ArmouryFromStore/>
     )
 ];
 
 export const pagePaths = contentsList.map(content => content.name.toLowerCase());
 
-export const contents: IDictionary<IPage> = contentsList.reduce((acc, curr) => {
+export const contents: IDictionary<IProject> = contentsList.reduce((acc, curr) => {
     acc[toPath(curr.name)] = curr;
     return acc;
 }, {});
