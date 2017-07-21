@@ -5,8 +5,8 @@ import { MenuItem } from "./MenuItem";
 import { connect } from 'react-redux';
 import { IStoreState } from '../../redux/main_reducer';
 import { toggleMenu } from '../HomeActionCreators';
-import {MenuButton} from "./MenuButton";
-import {IParams} from "../../data/models";
+import { MenuButton } from "./MenuButton";
+import { IParams } from "../../data/models";
 
 interface IProperties {
     isMenuOpen?: boolean
@@ -38,8 +38,11 @@ export class Menu extends React.Component<IProps, IState> {
         const styles = {
             pagesMenu: {
                 textAlign: "left",
-                padding: 2,
                 background: "rgba(0,0,0, 0.66)"
+            },
+            pagesMenu__items: {
+                display: "block",
+                verticalAlign: "top"
             }
         };
 
@@ -69,7 +72,7 @@ export class Menu extends React.Component<IProps, IState> {
                                             ?   { x: spring(opacityStyle, this.springConfig) }
                                             :   { x: spring(prevInterpolatedStyles[i - 1].x, this.springConfig) }
                     )}>
-                    {s =>   <div>
+                    {s =>   <div style={styles.pagesMenu__items}>
                                 {contentsList.map((content, i) =>
                                     <div key={i}
                                          style={{width: s[i].x}}>

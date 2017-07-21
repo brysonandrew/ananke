@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {IParams, IProject} from "../../data/models";
-import {SubMenu} from "../SubMenu/SubMenu";
+import {SubMenu} from "./SubMenu/SubMenu";
 
 interface IProps {
     index: number

@@ -97,7 +97,7 @@ export class Spotlight extends React.Component<IProps, IState> {
         this.camera = new THREE.PerspectiveCamera( 45,
             this.props.width / this.props.height, 1, 4000 );
 
-        this.camera.position.set(0, 400, 0);
+        this.camera.position.set(0, 200, 0);
         this.camera.lookAt(this.playerFocus.position);
 
         this.playerFocus.add(this.camera);

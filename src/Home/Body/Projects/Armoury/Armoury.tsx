@@ -12,6 +12,7 @@ import { loadGround } from "./fixtures/ground";
 import { loadBackground } from "./fixtures/background";
 import { Flame } from "./player/Flame/flame";
 import { CenteredText } from "../../../../Widgets/CenteredText";
+import {armouryMenuDictionary} from './armouryMenu/armouryMenu';
 
 
 interface IProperties {
@@ -44,7 +45,7 @@ export class Armoury extends React.Component<IProps, IState> {
     animateLoop;
     texture;
     point;
-    flame = new Flame();
+    weapon;
     playerFocus = new THREE.Group;
 
     public constructor(props?: any, context?: any) {
@@ -70,14 +71,28 @@ export class Armoury extends React.Component<IProps, IState> {
     }
 
     componentWillReceiveProps(nextProps) {
-        const isHeightChanged = nextProps.height !== this.props.height;
-        const isWidthChanged = nextProps.width !== this.props.width;
+        const { height, width, savedParams } = this.props;
+
+        const isHeightChanged = nextProps.height !== height;
+        const isWidthChanged = nextProps.width !== width;
 
         if (isHeightChanged || isWidthChanged) {
             this.renderer.setSize( nextProps.width, nextProps.height );
             this.camera.aspect = nextProps.width / nextProps.height;
             this.camera.updateProjectionMatrix();
         }
+
+        const isViewPathChanged = nextProps.savedParams.activeViewPath !== savedParams.activeViewPath;
+
+        if (isViewPathChanged) {
+            this.removeByName("weapon");
+            this.initWeapon(nextProps.savedParams.activeViewPath);
+        }
+    }
+
+    removeByName(name) {
+        const obj = this.scene.getObjectByName(name);
+        this.scene.remove(obj);
     }
 
     initGL() {
@@ -114,7 +129,7 @@ export class Armoury extends React.Component<IProps, IState> {
     }
 
     initAssets() {
-        this.scene.add(this.flame.renderFire());
+        this.initWeapon(this.props.savedParams.activeViewPath);
         this.playerFocus.add(this.camera);
         this.playerFocus.rotation.order = "YXZ";
         this.scene.add(this.playerFocus);
@@ -125,6 +140,20 @@ export class Armoury extends React.Component<IProps, IState> {
         ]).then((meshes) => {
             meshes.map(mesh => this.scene.add(mesh));
         });
+    }
+
+    initWeapon(viewPath) {
+
+        const key = viewPath
+                    ?   viewPath
+                    :   "gatling-gun";
+
+        this.weapon = armouryMenuDictionary[key].component;
+        this.weapon.assemble();
+        let weaponObj = this.weapon.render();
+        weaponObj.name =  "weapon";
+
+        this.scene.add(weaponObj);
     }
 
     animate() {
@@ -155,7 +184,7 @@ export class Armoury extends React.Component<IProps, IState> {
 
         const sourcePos = this.playerFocus.position;
 
-        this.flame.fire(isFiringKey, sourcePos);
+        // this.weapon.fire(isFiringKey, sourcePos);
 
         this.point.intensity = isFiringKey ? 1 : 0;
 

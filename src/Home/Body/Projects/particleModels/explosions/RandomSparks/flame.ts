@@ -11,7 +11,7 @@ export class RandomSparks {
     }
 
     addFire() {
-        const amount = 1;
+        const amount = 10;
 
         const colors = new Float32Array( amount * 3 );
         const sizes = new Float32Array( amount );
@@ -104,12 +104,30 @@ export class RandomSparks {
         });
     }
 
-    explode(isActive) {
+    animate() {
 
         this.spark();
-        if (isActive) {
-            this.addFire();
-        }
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+
     }
 
     render() {

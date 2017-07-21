@@ -4,7 +4,8 @@ import { connect } from 'react-redux';
 import { IStoreState } from '../../../../redux/main_reducer';
 import { IParams } from "../../../../data/models";
 import { IntroHeading } from "./IntroHeading";
-import {saveParams} from "../../../HomeActionCreators";
+import { saveParams } from "../../../HomeActionCreators";
+import {contentsList} from '../../../../data/content';
 
 interface IProperties {
     isMobile?: boolean
@@ -35,8 +36,11 @@ export class Intro extends React.Component<IProps, IState> {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.keysPressed.length > 0) {
-            this.props.history.push("/main");
-            this.props.onURLChange({activePagePath: "main"});
+
+            const firstPath = contentsList[1].path;
+
+            this.props.history.push(`/${firstPath}`);
+            this.props.onURLChange({activePagePath: firstPath});
         }
     }
 

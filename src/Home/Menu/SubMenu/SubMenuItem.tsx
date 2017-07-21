@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {IParams, IProject} from "../../data/models";
-import {Link} from "react-router-dom";
+import { IParams, IProject} from "../../../data/models";
+import { Link } from "react-router-dom";
 
 interface IProps {
     index: number

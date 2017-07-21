@@ -11,7 +11,7 @@ import {
 import { loadGround } from "./fixtures/ground";
 import { loadBackground } from "./fixtures/background";
 import { CenteredText } from "../../../../Widgets/CenteredText";
-import { explosionsMenuDictionary, explosionsMenuItemList } from "./explosionsMenu/explosionsMenu";
+import { particlesMenuDictionary, particlesMenuItemList } from "./particlesMenu/particlesMenu";
 import { Link } from "react-router-dom";
 
 interface IProperties {
@@ -36,7 +36,7 @@ interface IState extends IProperties, ICallbacks {
     isFallback: boolean
 }
 
-export class Explosions extends React.Component<IProps, IState> {
+export class Particles extends React.Component<IProps, IState> {
 
     scene;
     camera;
@@ -45,7 +45,7 @@ export class Explosions extends React.Component<IProps, IState> {
     texture;
     point;
     playerFocus = new THREE.Group;
-    explosion;
+    particles;
 
     public constructor(props?: any, context?: any) {
         super(props, context);
@@ -84,9 +84,8 @@ export class Explosions extends React.Component<IProps, IState> {
         const isViewPathChanged = nextProps.savedParams.activeViewPath !== savedParams.activeViewPath;
 
         if (isViewPathChanged) {
-            console.log(this.scene);
-            this.removeByName("explosion");
-            this.initExplosion(nextProps.savedParams.activeViewPath);
+            this.removeByName("particles");
+            this.initParticles(nextProps.savedParams.activeViewPath);
         }
     }
 
@@ -130,7 +129,7 @@ export class Explosions extends React.Component<IProps, IState> {
         this.playerFocus.rotation.order = "YXZ";
         this.scene.add(this.playerFocus);
 
-        this.initExplosion(this.props.savedParams.activeViewPath);
+        this.initParticles(this.props.savedParams.activeViewPath);
 
         Promise.all([
             loadGround(),
@@ -145,17 +144,17 @@ export class Explosions extends React.Component<IProps, IState> {
         this.scene.remove(obj);
     }
 
-    initExplosion(viewPath) {
+    initParticles(viewPath) {
 
         const key = viewPath
                         ?   viewPath
-                        :   "basic";
+                        :   "fire";
 
-        this.explosion = explosionsMenuDictionary[key].component;
-        let explosionObj = this.explosion.render();
-        explosionObj.name =  "explosion";
+        this.particles = particlesMenuDictionary[key].component;
+        let particlesObj = this.particles.render();
+        particlesObj.name =  "particles";
 
-        this.scene.add(explosionObj);
+        this.scene.add(particlesObj);
     }
 
     animate() {
@@ -184,7 +183,7 @@ export class Explosions extends React.Component<IProps, IState> {
 
         const isFiringKey = isFiring(keysPressed);
 
-        this.explosion.explode(isFiringKey);
+        this.particles.animate();
 
         // this.point.intensity = isFiringKey ? 1 : 0;
 
@@ -193,7 +192,7 @@ export class Explosions extends React.Component<IProps, IState> {
 
     render(): JSX.Element {
         const styles = {
-            explosions__menu: {
+            particles__menu: {
 
             }
         };
@@ -224,6 +223,6 @@ function mapDispatchToProps(dispatch, ownProps: IProps): ICallbacks {
     return {}
 }
 
-export const ExplosionsFromStore = connect(
+export const ParticlesFromStore = connect(
     mapStateToProps, mapDispatchToProps
-)(Explosions);
+)(Particles);

@@ -1,10 +1,11 @@
 import THREE = require('three');
 
-export class Flame {
+export class FireBlade {
 
     flame = new THREE.Group;
     initCount = 0;
     length = 8;
+    gravity = 2;
 
     constructor() {
         this.flame.rotation.y = Math.PI;
@@ -93,7 +94,7 @@ export class Flame {
 
         this.flame.children.forEach((fire, i) => {
 
-            fire.position.y += Math.tan(fire["life"]) * this.length;
+            fire.position.y += 0.1 * this.length - this.gravity;
 
             if (fire["life"] > maxLife) {
                 this.flame.children.splice(i, 1);
@@ -103,20 +104,11 @@ export class Flame {
         });
     }
 
-    animate(isFiring, sourcePos) {
-
-        this.flame.position.x = sourcePos.x;
-        this.flame.position.y = sourcePos.y;
-        this.flame.position.z = sourcePos.z;
-
-        // this.flame.rotation.x += coordDiffs.rot.x;
-        // this.flame.rotation.y += coordDiffs.rot.y;
-        // this.flame.rotation.z += coordDiffs.rot.z;
+    animate() {
 
         this.smoulder();
-        if (isFiring) {
-            this.addFire();
-        }
+        this.addFire();
+
     }
 
     render() {

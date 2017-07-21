@@ -1,41 +1,37 @@
 import THREE = require('three');
 
+
 export class Flame {
 
-    flame = new THREE.Group;
-    initCount = 0;
-    length = 8;
+    cluster = new THREE.Group;
+    count = 0;
 
-    constructor() {
-        this.flame.rotation.y = Math.PI;
-        this.flame.rotation.z = Math.PI * 0.125;
-    }
+    constructor() {}
 
-    addFire() {
-        const amount = 20;
-        const scatterSide = 2;
+    addCluster() {
+        const amount = 10;
+        const radius = 4;
 
+        const positions = new Float32Array( amount * 3 );
         const colors = new Float32Array( amount * 3 );
         const sizes = new Float32Array( amount );
 
         const vertex = new THREE.Vector3();
         const color = new THREE.Color( 0xffffff );
 
-        const positions = new Float32Array( amount * 3 );
-
         positions.forEach((_, i) => {
-            vertex.x = scatterSide * Math.random() * 2 - 1;
-            vertex.y = this.length * Math.random() * 2 - 1;
-            vertex.z = 0;
-            vertex.toArray((positions as any), i * 3);
+            vertex.x = (Math.random() * 2 - 1) * radius;
+            vertex.y = (Math.random() * 2 - 1) * radius;
+            vertex.z = (Math.random() * 2 - 1) * radius;
+            (vertex as any).toArray(positions, i);
 
-            sizes[i] = i * 0.1 + 10;
+            sizes[i] = 20;
 
-            color.setHSL(0, 1, 0.6);
-            color.toArray((colors as any), i * 3);
+            color.setHSL(0.15 * ( i / amount ) - 0.005, 0.8, 0.6);
+            (color as any).toArray(colors, i * 3);
         });
 
-        let geometry = new THREE.BufferGeometry();
+        const geometry = new THREE.BufferGeometry();
         geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
         geometry.addAttribute( 'customColor', new THREE.BufferAttribute( colors, 3 ) );
         geometry.addAttribute( 'size', new THREE.BufferAttribute( sizes, 1 ) );
@@ -64,62 +60,47 @@ export class Flame {
                                 gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
                             }`,
             blending:       THREE.AdditiveBlending,
-            depthTest:      true,
-            depthWrite:     false,
+            depthTest:      false,
             transparent:    true
         } );
 
-        let fire = new THREE.Points( geometry, material );
-        fire["life"] = 0;
+        const cluster = new THREE.Points( geometry, material );
 
-        // fire.position.set(
-        //     this.flame.position.x,
-        //     this.flame.position.y,
-        //     this.flame.position.z
-        // );
+        cluster.position.x = (0.5 - Math.random()) * radius;
+        cluster.position.y = (0.5 - Math.random()) * radius;
+        cluster.position.z = (0.5 - Math.random()) * radius;
+        cluster.rotation.x = Math.PI * 2 * Math.random();
+        cluster.rotation.y = Math.PI * 2 * Math.random();
+        cluster.rotation.z = Math.PI * 2 * Math.random();
 
-        // fire.rotation.set(
-        //     this.flame.rotation.x,
-        //     this.flame.rotation.y,
-        //     this.flame.rotation.z
-        // );
+        cluster["life"] = 0;
 
-        this.flame.add(fire);
+        this.cluster.add(cluster);
     }
 
-    smoulder() {
-        const maxIterations = 50;
-        const maxLife = Math.PI * 2;
+    fire() {
 
-        this.flame.children.forEach((fire, i) => {
+        this.cluster.children.forEach((spark, i) => {
 
-            fire.position.y += Math.tan(fire["life"]) * this.length;
+            spark.position.x += Math.cos(spark["life"]);
+            spark.position.y += spark["life"] * 0.15;
+            spark.position.z += Math.cos(spark["life"]);
 
-            if (fire["life"] > maxLife) {
-                this.flame.children.splice(i, 1);
+            if (spark["life"]===20) {
+                this.cluster.children.splice(i, 1);
             }
-
-            fire["life"] += maxLife / maxIterations;
+            spark["life"]++;
         });
     }
 
-    animate(isFiring, sourcePos) {
+    animate() {
+        this.addCluster();
 
-        this.flame.position.x = sourcePos.x;
-        this.flame.position.y = sourcePos.y;
-        this.flame.position.z = sourcePos.z;
-
-        // this.flame.rotation.x += coordDiffs.rot.x;
-        // this.flame.rotation.y += coordDiffs.rot.y;
-        // this.flame.rotation.z += coordDiffs.rot.z;
-
-        this.smoulder();
-        if (isFiring) {
-            this.addFire();
-        }
+        this.fire();
     }
 
     render() {
-        return this.flame
+        return this.cluster;
     }
+
 }

@@ -107,31 +107,29 @@ export class BasicExplosion {
         });
     }
 
-    explode(isActive) {
+    animate() {
 
         this.spark();
-        if (isActive) {
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-            this.addFire();
-        }
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
+        this.addFire();
     }
 
     render() {

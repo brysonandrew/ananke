@@ -35,7 +35,6 @@ export class MenuButton extends React.Component<IProps, IState> {
         const styles = {
             menuButton: {
                 position: "relative",
-                display: "inline-block",
                 width: 40,
                 height: 40,
                 cursor: "pointer"
@@ -49,23 +48,23 @@ export class MenuButton extends React.Component<IProps, IState> {
             },
             menuButton__lines: [
                 {
-                    top: spring(isACross ? 20 : 6),
-                    left: spring(isHovered ? isACross ? 12 : 25 : 0),
-                    width: spring(isHovered ? 75 : 100),
+                    top: spring(isACross ? 20 : 3),
+                    left: spring(isHovered ? isACross ? 12 : 25 : -5),
+                    width: spring(isHovered ? 75 : 110),
                     scale: 1,
                     rotate: spring(isACross ? 45 : 0)
                 },
                 {
-                    top: 20,
-                    left: 0,
-                    width: spring(isHovered ? 75 : 100),
+                    top: 17,
+                    left: -5,
+                    width: spring(isHovered ? 75 : 110),
                     scale: spring(isACross ? 0 : 1),
                     rotate: 0
                 },
                 {
-                    top: spring(isACross ? 20 : 34),
-                    left: spring(isHovered ? isACross ? 12 : 25 : 0),
-                    width: spring(isHovered ? 75 : 100),
+                    top: spring(isACross ? 20 : 33),
+                    left: spring(isHovered ? isACross ? 12 : 25 : -5),
+                    width: spring(isHovered ? 75 : 110),
                     scale: 1,
                     rotate: spring(isACross ? -45 : 0),
                 }

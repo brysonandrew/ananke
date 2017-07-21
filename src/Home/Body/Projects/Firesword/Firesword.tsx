@@ -113,7 +113,7 @@ export class Firesword extends React.Component<IProps, IState> {
     }
 
     initAssets() {
-        this.scene.add(this.flame.renderFire());
+        // this.scene.add(this.flame.renderFire());
         this.playerFocus.add(this.camera);
         this.playerFocus.rotation.order = "YXZ";
         this.scene.add(this.playerFocus);
@@ -154,7 +154,7 @@ export class Firesword extends React.Component<IProps, IState> {
 
         const sourcePos = this.playerFocus.position;
 
-        this.flame.fire(isFiringKey, sourcePos);
+        // this.flame.fire(isFiringKey, sourcePos);
 
         this.point.intensity = isFiringKey ? 1 : 0;
 

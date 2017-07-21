@@ -2,14 +2,21 @@ import * as React from 'react';
 import { IProject } from './models';
 import { toPath } from "./helpers/toPath";
 import { IDictionary } from "./models";
-import { IntroFromStore } from "../Home/Body/Pages/Intro/Intro";
-import { MainFromStore } from "../Home/Body/Pages/Main/Main";
+
+import { IntroFromStore } from '../Home/Body/Pages/Intro/Intro';
+
 import { SpotlightFromStore } from "../Home/Body/Projects/Spotlight/Spotlight";
+
 import { CruisingFromStore } from "../Home/Body/Projects/Cruising/Cruising";
+
 import { FPSFromStore } from "../Home/Body/Projects/FPS/FPS";
-import { ExplosionsFromStore } from "../Home/Body/Projects/Explosions/Explosions";
+
+import { ParticlesFromStore } from "../Home/Body/Projects/Particles/Particles";
+import { particlesMenuItemList } from "../Home/Body/Projects/Particles/particlesMenu/particlesMenu";
+
 import { ArmouryFromStore } from "../Home/Body/Projects/Armoury/Armoury";
-import {explosionsMenuItemList} from "../Home/Body/Projects/Explosions/explosionsMenu/explosionsMenu";
+import { armouryMenuItemList } from '../Home/Body/Projects/Armoury/armouryMenu/armouryMenu';
+
 
 function Project(name, component, subComponents?) {
     this.name= name;
@@ -24,10 +31,6 @@ export const contentsList: IProject[] = [
         <IntroFromStore/>
     ),
     new Project(
-        "Main",
-        <MainFromStore/>
-    ),
-    new Project(
         "Spotlight",
         <SpotlightFromStore/>
     ),
@@ -40,13 +43,14 @@ export const contentsList: IProject[] = [
         <FPSFromStore/>
     ),
     new Project(
-        "Explosions",
-        <ExplosionsFromStore/>,
-        explosionsMenuItemList
+        "Particles",
+        <ParticlesFromStore/>,
+        particlesMenuItemList
     ),
     new Project(
         "Armoury",
-        <ArmouryFromStore/>
+        <ArmouryFromStore/>,
+        armouryMenuItemList
     )
 ];
 

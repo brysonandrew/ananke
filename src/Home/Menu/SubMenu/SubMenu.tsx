@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { StaggeredMotion, spring } from 'react-motion';
-import { contentsList } from "../../data/content";
+import { contentsList } from "../../../data/content";
 import { SubMenuItem } from "./SubMenuItem";
-import { SubMenuButton } from "./SubMenuButton";
-import { IParams } from "../../data/models";
-import {saveParams} from "../HomeActionCreators";
+import { IParams } from "../../../data/models";
+import { MenuButton } from "../MenuButton";
 
 interface IProps {
     savedParams?: IParams
@@ -49,7 +48,6 @@ export class SubMenu extends React.Component<IProps, IState> {
         const styles = {
             pagesSubMenu: {
                 textAlign: "left",
-                padding: 2,
                 background: "rgba(0,0,0, 0.66)"
             }
         };
@@ -65,7 +63,7 @@ export class SubMenu extends React.Component<IProps, IState> {
 
         return (
             <div style={styles.pagesSubMenu}>
-                <SubMenuButton
+                <MenuButton
                     isACross={isSubMenuOpen}
                     onClick={isSubMenuOpen ? this.handleSubMenuClose : this.handleSubMenuOpen}
                 />
