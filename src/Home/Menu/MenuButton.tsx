@@ -44,29 +44,29 @@ export class MenuButton extends React.Component<IProps, IState> {
                 width: "100%",
                 height: 6,
                 borderRadius: 2,
-                background: colors.wht1
+                background: colors.wht
             },
             menuButton__lines: [
                 {
-                    top: spring(isACross ? 20 : 3),
-                    left: spring(isHovered ? isACross ? 12 : 25 : -5),
-                    width: spring(isHovered ? 75 : 110),
+                    top: isACross ? 20 : 6,
+                    left: isHovered ? isACross ? 12 : 25 : -5,
+                    width: isHovered ? 75 : 110,
                     scale: 1,
-                    rotate: spring(isACross ? 45 : 0)
+                    rotate: isACross ? 45 : 0
                 },
                 {
                     top: 17,
                     left: -5,
-                    width: spring(isHovered ? 75 : 110),
-                    scale: spring(isACross ? 0 : 1),
+                    width: isHovered ? 75 : 110,
+                    scale: isACross ? 0 : 1,
                     rotate: 0
                 },
                 {
-                    top: spring(isACross ? 20 : 33),
-                    left: spring(isHovered ? isACross ? 12 : 25 : -5),
-                    width: spring(isHovered ? 75 : 110),
+                    top: isACross ? 20 : 27,
+                    left: isHovered ? isACross ? 12 : 25 : -5,
+                    width: isHovered ? 75 : 110,
                     scale: 1,
-                    rotate: spring(isACross ? -45 : 0),
+                    rotate: isACross ? -45 : 0,
                 }
             ]
         } as any;
@@ -76,16 +76,13 @@ export class MenuButton extends React.Component<IProps, IState> {
                  onMouseEnter={() => this.handleMouseEnter()}
                  onMouseLeave={() => this.handleMouseLeave()}>
                 {styles.menuButton__lines.map((style, i) =>
-                    <Motion key={i}
-                            style={style}>
-                        {s =>
-                            <div style={ Object.assign({}, styles.menuButton__line, {
-                                top: s.top,
-                                left: `${s.left}%`,
-                                width: `${s.width}%`,
-                                transform: `scaleX(${s.scale}) rotate(${s.rotate}deg)`
-                            }) }/>}
-                    </Motion> )}
+                    <div key={i}
+                         style={ Object.assign({}, styles.menuButton__line, {
+                            top: style.top,
+                            left: `${style.left}%`,
+                            width: `${style.width}%`,
+                            transform: `scaleX(${style.scale}) rotate(${style.rotate}deg)`
+                    }) }/> )}
             </div>
         );
     }

@@ -6,26 +6,28 @@ const colors = {
     lightgrey: 0x757575
 };
 
+const materialType = "MeshPhongMaterial";
+
 export const createSingleBarrel = () => {
     const geometry = new THREE.CylinderGeometry( 2, 2, 100, 20 );
-    const material = new THREE.MeshBasicMaterial( {
-        color: colors.darkgrey
+    const material = new THREE[materialType]( {
+        emissive: colors.darkgrey
     } );
     return new THREE.Mesh( geometry, material );
 };
 
 export const createBarrelBrace = () => {
     const geometry = new THREE.CylinderGeometry( 12, 12, 4, 50 );
-    const material = new THREE.MeshBasicMaterial( {
-        color: colors.black
+    const material = new THREE[materialType]( {
+        emissive: colors.black
     } );
     return new THREE.Mesh( geometry, material );
 };
 
 export const createHandleBase = () => {
     const geometry = new THREE.BoxGeometry( 40, 12, 4 );
-    const material = new THREE.MeshBasicMaterial( {
-        color: colors.black
+    const material = new THREE[materialType]( {
+        emissive: colors.black
     } );
     return new THREE.Mesh( geometry, material );
 };
@@ -33,15 +35,15 @@ export const createHandleBase = () => {
 export const createHandle = () => {
     const handle = new THREE.Group;
     const geometryTL = new THREE.TorusGeometry( 10, 1.5, 16, 100, Math.PI * 0.5 );
-    const materialTL = new THREE.MeshBasicMaterial( { color: colors.lightgrey } );
+    const materialTL = new THREE[materialType]( { emissive: colors.lightgrey } );
     const handleRight = new THREE.Mesh( geometryTL, materialTL );
     handleRight.rotation.set(0, 0, 0);
     handleRight.position.set(4, 10, 44);
     handle.add( handleRight );
 
     const geometryC = new THREE.CylinderGeometry( 2, 2, 14, 20 );
-    const materialC = new THREE.MeshBasicMaterial( {
-        color: colors.black
+    const materialC = new THREE[materialType]( {
+        emissive: colors.black
     } );
     const bar = new THREE.Mesh( geometryC, materialC );
     bar.rotation.set(0, 0, Math.PI * 0.5);
@@ -49,7 +51,7 @@ export const createHandle = () => {
     handle.add( bar );
 
     const geometryTR = new THREE.TorusGeometry( 10, 1.5, 16, 100, Math.PI * 0.5 );
-    const materialTR = new THREE.MeshBasicMaterial( { color: colors.lightgrey } );
+    const materialTR = new THREE[materialType]( { emissive: colors.lightgrey } );
     const handleLeft = new THREE.Mesh( geometryTR, materialTR );
     handleLeft.rotation.set(0, 0, Math.PI * 0.5);
     handleLeft.position.set(-4, 10, 44);
@@ -60,16 +62,16 @@ export const createHandle = () => {
 
 export const createEngine = () => {
     const geometry = new THREE.CylinderGeometry( 10, 10, 35, 60 );
-    const material = new THREE.MeshBasicMaterial( {
-        color: colors.black
+    const material = new THREE[materialType]( {
+        emissive: colors.black
     } );
     return new THREE.Mesh( geometry, material );
 };
 
 export const createAmmoFeed = () => {
     const geometry = new THREE.CylinderGeometry( 6, 6, 30, 60 );
-    const material = new THREE.MeshBasicMaterial( {
-        color: colors.darkgrey
+    const material = new THREE[materialType]( {
+        emissive: colors.darkgrey
     } );
     return new THREE.Mesh( geometry, material );
 };
@@ -77,8 +79,8 @@ export const createAmmoFeed = () => {
 export const createBackHandleBrace = () => {
     const handleBrace = new THREE.Group;
     const geometryLeft = new THREE.BoxGeometry( 25, 3, 2 );
-    const materialLeft = new THREE.MeshBasicMaterial( {
-        color: colors.darkgrey
+    const materialLeft = new THREE[materialType]( {
+        emissive: colors.darkgrey
     } );
     const braceLeft = new THREE.Mesh( geometryLeft, materialLeft );
     braceLeft.rotation.set(Math.PI * 0.5, 0, Math.PI * 0.25);
@@ -86,8 +88,8 @@ export const createBackHandleBrace = () => {
     handleBrace.add( braceLeft );
 
     const geometryRight = new THREE.BoxGeometry( 25, 3, 2 );
-    const materialRight = new THREE.MeshBasicMaterial( {
-        color: colors.darkgrey
+    const materialRight = new THREE[materialType]( {
+        emissive: colors.darkgrey
     } );
     const braceRight = new THREE.Mesh( geometryRight, materialRight );
     braceRight.rotation.set(Math.PI * 0.5, 0, -Math.PI * 0.25);
@@ -99,7 +101,7 @@ export const createBackHandleBrace = () => {
 
 export const createBackHandle = () => {
     const geometryT = new THREE.TorusGeometry( 10, 1.5, 16, 100, Math.PI * 0.75 );
-    const materialT = new THREE.MeshBasicMaterial( { color: colors.lightgrey } );
+    const materialT = new THREE[materialType]( { emissive: colors.lightgrey } );
     return new THREE.Mesh( geometryT, materialT );
 };
 

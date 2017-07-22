@@ -1,9 +1,12 @@
 import { toPath } from "../../../../../data/helpers/toPath";
 import { IDictionary, IProject } from "../../../../../data/models";
-import { BasicExplosion } from "../../particleModels/explosions/Basic/flame";
-import { RandomSparks } from "../../particleModels/explosions/RandomSparks/flame";
-import { FireBlade } from "../../particleModels/elements/FireBlade/flame";
-import { Flame } from "../../particleModels/elements/Fire/flame";
+import { BasicExplosion } from "../particleModels/explosions/Basic/basic";
+import { RandomSparks } from "../particleModels/explosions/RandomSparks/randomSparks";
+import { FireBlade } from "../particleModels/elements/FireBlade/fireBlade";
+import { Flame } from "../particleModels/elements/Fire/fire";
+import { Snow } from '../particleModels/elements/Snow/snow';
+import { Rain } from '../particleModels/elements/Rain/rain';
+import { Frost } from '../particleModels/elements/Frost/frost';
 
 function Project(name, component) {
     this.name = name;
@@ -27,6 +30,18 @@ export const particlesMenuItemList: IProject[] = [
     new Project(
         "Fire",
         new Flame
+    ),
+    new Project(
+        "Snow",
+        new Snow
+    ),
+    new Project(
+        "Rain",
+        new Rain
+    ),
+    new Project(
+        "Frost",
+        new Frost
     )
 ];
 

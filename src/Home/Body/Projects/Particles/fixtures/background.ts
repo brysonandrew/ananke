@@ -3,7 +3,7 @@ import { loadTexture } from "../../../../../data/helpers/loaders/texture";
 
 export const loadBackground = () => {
     return new Promise(resolve => {
-        loadTexture("/images/textures/greenblueblack.jpg").then((texture) => {
+        loadTexture("/images/textures/whiteblack.jpg").then((texture) => {
             texture["mapping"] = THREE.UVMapping;
             // texture["wrapS"] = texture["wrapT"] = THREE.RepeatWrapping;
             // texture["repeat"].set(1000, 1000);

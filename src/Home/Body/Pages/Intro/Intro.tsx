@@ -6,6 +6,7 @@ import { IParams } from "../../../../data/models";
 import { IntroHeading } from "./IntroHeading";
 import { saveParams } from "../../../HomeActionCreators";
 import {contentsList} from '../../../../data/content';
+import {IntroContents} from './IntroContents';
 
 interface IProperties {
     isMobile?: boolean
@@ -56,7 +57,7 @@ export class Intro extends React.Component<IProps, IState> {
                 display: "table-cell",
                 textAlign: "center",
                 verticalAlign: "middle",
-                height: "100%",
+                height: "100vh",
                 width: "100%"
             }
         } as any;
@@ -69,6 +70,10 @@ export class Intro extends React.Component<IProps, IState> {
                         isTablet={isTablet}
                         isLaptop={isLaptop}
                     />
+                    <IntroContents
+                        isMobile={isMobile}
+                        isTablet={isTablet}
+                        isLaptop={isLaptop}/>
                 </div>
             </div>
         );

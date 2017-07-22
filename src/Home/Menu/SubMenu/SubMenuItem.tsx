@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { IParams, IProject} from "../../../data/models";
 import { Link } from "react-router-dom";
+import {colors} from '../../../data/themeOptions';
 
 interface IProps {
     index: number
@@ -45,7 +46,7 @@ export class SubMenuItem extends React.Component<IProps, IState> {
                 position: "relative",
                 width: "100%",
                 height: 40,
-                background: isSelected ? "#fff" : "#000",
+                background: isSelected ? colors.wht : colors.hi,
                 opacity: isHovered ? 0.8 : 1,
                 borderRight: "1px solid #fff",
                 cursor: "pointer"
@@ -54,7 +55,7 @@ export class SubMenuItem extends React.Component<IProps, IState> {
                 position: "absolute",
                 left: "50%",
                 top: "50%",
-                color: isSelected ? "#000" : "#fff",
+                color: isSelected ? colors.hi : colors.wht,
                 opacity: textOpacity,
                 transform: "translate(-50%, -50%)"
             },
@@ -62,7 +63,7 @@ export class SubMenuItem extends React.Component<IProps, IState> {
                 position: "absolute",
                 left: "50%",
                 top: "50%",
-                color: isSelected ? "#000" : "#fff",
+                color: isSelected ? colors.hi : colors.wht,
                 opacity: -1 * (textOpacity - 1),
                 transform: "translate(-50%, -50%)"
             }

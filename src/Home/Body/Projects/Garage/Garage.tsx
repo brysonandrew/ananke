@@ -6,12 +6,13 @@ import { connect } from 'react-redux';
 import { IStoreState } from '../../../../redux/main_reducer';
 import { IParams } from "../../../../data/models";
 import {
-    playerPositionX, playerPositionZ, playerRotationY, isFiring, playerRotationX
+    playerPositionX, playerPositionZ, playerRotationY
 } from "../../../../data/helpers/controls/keyboard";
 import { loadGround } from "./fixtures/ground";
 import { loadBackground } from "./fixtures/background";
-import { GatlingGun } from "./player/GatlingGun/gatlingGun";
 import { CenteredText } from "../../../../Widgets/CenteredText";
+import { garageMenuDictionary } from './garageMenu/garageMenu';
+
 
 interface IProperties {
     width?: number
@@ -32,10 +33,11 @@ interface IProps extends IProperties, ICallbacks {
 }
 
 interface IState extends IProperties, ICallbacks {
-    isFallback: boolean
+    isFallback?: boolean
+    isCarAdded?: boolean
 }
 
-export class FPS extends React.Component<IProps, IState> {
+export class Garage extends React.Component<IProps, IState> {
 
     scene;
     camera;
@@ -43,13 +45,17 @@ export class FPS extends React.Component<IProps, IState> {
     animateLoop;
     texture;
     point;
-    gatlingGun = new GatlingGun();
+    car;
     playerFocus = new THREE.Group;
+    circleLights;
+    circleLightRadius = 20;
+    defaultView = "sedan";
 
     public constructor(props?: any, context?: any) {
         super(props, context);
         this.state = {
-            isFallback: false
+            isFallback: false,
+            isCarAdded: false
         };
     }
 
@@ -69,14 +75,28 @@ export class FPS extends React.Component<IProps, IState> {
     }
 
     componentWillReceiveProps(nextProps) {
-        const isHeightChanged = nextProps.height !== this.props.height;
-        const isWidthChanged = nextProps.width !== this.props.width;
+        const { height, width, savedParams } = this.props;
+
+        const isHeightChanged = nextProps.height !== height;
+        const isWidthChanged = nextProps.width !== width;
 
         if (isHeightChanged || isWidthChanged) {
             this.renderer.setSize( nextProps.width, nextProps.height );
             this.camera.aspect = nextProps.width / nextProps.height;
             this.camera.updateProjectionMatrix();
         }
+
+        const isViewPathChanged = nextProps.savedParams.activeViewPath !== savedParams.activeViewPath;
+
+        if (isViewPathChanged) {
+            this.removeByName("car");
+            this.initcar(nextProps.savedParams.activeViewPath);
+        }
+    }
+
+    removeByName(name) {
+        const obj = this.scene.getObjectByName(name);
+        this.scene.remove(obj);
     }
 
     initGL() {
@@ -100,7 +120,7 @@ export class FPS extends React.Component<IProps, IState> {
 
     initCamera() {
         this.camera = new THREE.PerspectiveCamera( 45, this.props.width / this.props.height, 1, 4000 );
-        this.camera.position.set(0, 16, 24);
+        this.camera.position.set(0, 10, 50);
     }
 
     initScene() {
@@ -108,14 +128,19 @@ export class FPS extends React.Component<IProps, IState> {
     }
 
     initLighting() {
-        this.point = new THREE.PointLight( 0xffffff, 1 );
+        const lights = [ null, null, null, null ];
+        this.circleLights = lights.map(light => {
+            light = new THREE.PointLight( 0xffffff, 0.15 );
+            this.scene.add(light);
+            return light
+        });
+        //player lights
+        this.point = new THREE.PointLight( 0xffffff, 0 );
         this.playerFocus.add(this.point);
     }
 
     initAssets() {
-        this.scene.add(this.gatlingGun.renderBullets());
-        this.gatlingGun.assemble();
-        this.playerFocus.add(this.gatlingGun.render());
+        this.initcar(this.props.savedParams.activeViewPath);
         this.playerFocus.add(this.camera);
         this.playerFocus.rotation.order = "YXZ";
         this.scene.add(this.playerFocus);
@@ -128,6 +153,24 @@ export class FPS extends React.Component<IProps, IState> {
         });
     }
 
+    initcar(viewPath) {
+
+        const key = viewPath
+                    ?   viewPath
+                    :   this.defaultView;
+
+        this.car = garageMenuDictionary[key].component;
+        this.car.assemble();
+        this.car = this.car.render();
+        this.car.name =  "car";
+
+        this.scene.add(this.car);
+
+        this.setState({
+            isCarAdded: true
+        })
+    }
+
     animate() {
         this.animateLoop = requestAnimationFrame( this.animate.bind(this) );
         this.renderMotion();
@@ -135,26 +178,34 @@ export class FPS extends React.Component<IProps, IState> {
 
     renderMotion() {
         const { keysPressed } = this.props;
+        const { isCarAdded } = this.state;
 
-        const rotX = playerRotationX(keysPressed);
-        const rotY = playerRotationY(keysPressed);
+        const diffPosX = playerPositionX(keysPressed, this.playerFocus.rotation.y);
+        const diffPosY = 0;
+        const diffPosZ = playerPositionZ(keysPressed, this.playerFocus.rotation.y);
 
-        const posX = playerPositionX(keysPressed, this.playerFocus.rotation.y);
-        const posZ = playerPositionZ(keysPressed, this.playerFocus.rotation.y);
+        const diffRotY = playerRotationY(keysPressed);
 
-        this.playerFocus.rotation.x+=rotX;
-        this.playerFocus.rotation.y+=rotY;
+        this.playerFocus.position.x+=diffPosX;
+        this.playerFocus.position.y+=diffPosY;
+        this.playerFocus.position.z+=diffPosZ;
 
-        this.playerFocus.position.x+=posX;
-        this.playerFocus.position.z+=posZ;
+        this.playerFocus.rotation.y+=diffRotY;
+
+        if (isCarAdded) {
+
+            this.car.rotation.y+=0.1;
+
+            this.circleLights.forEach((light, i) => {
+                const r = (this.circleLightRadius - Math.cos(this.car.rotation.y) * this.circleLightRadius * 0.5);
+                light.position.x = Math.sin(-this.car.rotation.y + Math.PI * 2 / this.circleLights.length * (i + 1)) * r;
+                light.position.y = r;
+                light.position.z = Math.cos(-this.car.rotation.y + Math.PI * 2 / this.circleLights.length * (i + 1)) * r;
+            });
+
+        }
 
         this.renderer.render( this.scene, this.camera );
-
-        const isFiringKey = isFiring(keysPressed);
-
-        this.gatlingGun.fire(isFiringKey, this.playerFocus, keysPressed);
-
-        this.point.intensity = isFiringKey ? Math.random() * 100 : 0;
     }
 
     render(): JSX.Element {
@@ -184,6 +235,6 @@ function mapDispatchToProps(dispatch, ownProps: IProps): ICallbacks {
     return {}
 }
 
-export const FPSFromStore = connect(
+export const GarageFromStore = connect(
     mapStateToProps, mapDispatchToProps
-)(FPS);
+)(Garage);

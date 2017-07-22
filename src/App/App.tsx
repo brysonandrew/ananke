@@ -16,8 +16,7 @@ addComponentCSS({
         body {
             position: relative;
             min-width: 320px;
-            background: #212121;
-            color: #311B92;
+            background: #311B92;
         }
 
         button, input, a {

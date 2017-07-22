@@ -17,6 +17,9 @@ import { particlesMenuItemList } from "../Home/Body/Projects/Particles/particles
 import { ArmouryFromStore } from "../Home/Body/Projects/Armoury/Armoury";
 import { armouryMenuItemList } from '../Home/Body/Projects/Armoury/armouryMenu/armouryMenu';
 
+import { GarageFromStore } from '../Home/Body/Projects/Garage/Garage';
+import { garageMenuItemList } from '../Home/Body/Projects/Garage/garageMenu/garageMenu';
+
 
 function Project(name, component, subComponents?) {
     this.name= name;
@@ -51,6 +54,11 @@ export const contentsList: IProject[] = [
         "Armoury",
         <ArmouryFromStore/>,
         armouryMenuItemList
+    ),
+    new Project(
+        "Garage",
+        <GarageFromStore/>,
+        garageMenuItemList
     )
 ];
 

@@ -1,6 +1,6 @@
 import THREE = require('three');
 import { playerPositionX, playerPositionZ, playerRotationY
-} from "../../../../../../data/helpers/controls/keyboard";
+} from "../../../../../../../data/helpers/controls/keyboard";
 
 export class VisualBullets {
 

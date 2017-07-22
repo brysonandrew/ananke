@@ -7,6 +7,7 @@ import { IStoreState } from '../../redux/main_reducer';
 import { toggleMenu } from '../HomeActionCreators';
 import { MenuButton } from "./MenuButton";
 import { IParams } from "../../data/models";
+import {colors} from '../../data/themeOptions';
 
 interface IProperties {
     isMenuOpen?: boolean
@@ -26,8 +27,6 @@ interface IState extends IProperties, ICallbacks {}
 
 export class Menu extends React.Component<IProps, IState> {
 
-    springConfig = {stiffness: 120, damping: 17};
-
     public constructor(props?: any, context?: any) {
         super(props, context);
     }
@@ -38,7 +37,7 @@ export class Menu extends React.Component<IProps, IState> {
         const styles = {
             pagesMenu: {
                 textAlign: "left",
-                background: "rgba(0,0,0, 0.66)"
+                background: colors.hi
             },
             pagesMenu__items: {
                 display: "block",
@@ -46,14 +45,9 @@ export class Menu extends React.Component<IProps, IState> {
             }
         };
 
-        const itemCount = contentsList.length;
         const widthStyle = isMenuOpen ? 220 : 40;
-        const widthStyles = contentsList.map(_ => ({x: widthStyle}));
 
         const opacityStyle = isMenuOpen ? 1 : 0;
-        const opacityStyles = contentsList.map(_ => ({x: opacityStyle}));
-
-        const defaultStyles = widthStyles.concat(opacityStyles);
 
         return (
             <div style={styles.pagesMenu}>
@@ -61,32 +55,20 @@ export class Menu extends React.Component<IProps, IState> {
                     isACross={isMenuOpen}
                     onClick={isMenuOpen ? onMenuClose : onMenuOpen}
                 />
-                <StaggeredMotion
-                    defaultStyles={defaultStyles}
-                    styles={prevInterpolatedStyles => prevInterpolatedStyles.map((_, i) =>
-                        i === 0
-                            ?   { x: spring(widthStyle, this.springConfig) }
-                            :   i < itemCount
-                                    ?   { x: spring(prevInterpolatedStyles[i - 1].x, this.springConfig) }
-                                    :   i === itemCount
-                                            ?   { x: spring(opacityStyle, this.springConfig) }
-                                            :   { x: spring(prevInterpolatedStyles[i - 1].x, this.springConfig) }
-                    )}>
-                    {s =>   <div style={styles.pagesMenu__items}>
-                                {contentsList.map((content, i) =>
-                                    <div key={i}
-                                         style={{width: s[i].x}}>
-                                        <MenuItem
-                                            index={i}
-                                            textOpacity={s[i + itemCount].x}
-                                            savedParams={savedParams}
-                                            isMenuOpen={isMenuOpen}
-                                            content={content}
-                                            onClick={this.props.onClick}
-                                        />
-                                    </div>)}
-                            </div>}
-                </StaggeredMotion>
+                <div style={styles.pagesMenu__items}>
+                    {contentsList.map((content, i) =>
+                        <div key={i}
+                             style={{width: widthStyle}}>
+                            <MenuItem
+                                index={i}
+                                textOpacity={opacityStyle}
+                                savedParams={savedParams}
+                                isMenuOpen={isMenuOpen}
+                                content={content}
+                                onClick={this.props.onClick}
+                            />
+                        </div>)}
+                </div>
             </div>
         );
     }

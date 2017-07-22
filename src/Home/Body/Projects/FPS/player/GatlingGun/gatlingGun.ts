@@ -41,7 +41,7 @@ export class GatlingGun {
 
         const positions = new Float32Array( amount * 3 );
 
-        const rotY = sourceObject.rot.y + playerRotationY(keysPressed);
+        const rotY = sourceObject.rotation.y + playerRotationY(keysPressed);
 
         const x = radius * -Math.sin(rotY) + playerPositionX(keysPressed, rotY) * 2;
         const z = radius * -Math.cos(rotY) + playerPositionZ(keysPressed, rotY) * 2;
@@ -96,15 +96,15 @@ export class GatlingGun {
         bullet["life"] = 0;
 
         bullet.position.set(
-            sourceObject.pos.x + x,
-            sourceObject.pos.y + this.initialY,
-            sourceObject.pos.z + z
+            sourceObject.position.x + x,
+            sourceObject.position.y + this.initialY,
+            sourceObject.position.z + z
         );
 
         bullet.rotation.set(
-            sourceObject.rot.x,
-            sourceObject.rot.y,
-            sourceObject.rot.z
+            sourceObject.rotation.x,
+            sourceObject.rotation.y,
+            sourceObject.rotation.z
         );
 
         this.bullets.add(bullet);

@@ -6,14 +6,12 @@ import { connect } from 'react-redux';
 import { IStoreState } from '../../../../redux/main_reducer';
 import { IParams } from "../../../../data/models";
 import {
-    playerPositionX, playerPositionZ, playerRotationY, isFiring, playerRotationX
+    playerPositionX, playerPositionZ, playerRotationY
 } from "../../../../data/helpers/controls/keyboard";
 import { loadGround } from "./fixtures/ground";
 import { loadBackground } from "./fixtures/background";
-import { Flame } from "./player/Flame/flame";
 import { CenteredText } from "../../../../Widgets/CenteredText";
-import {armouryMenuDictionary} from './armouryMenu/armouryMenu';
-
+import { armouryMenuDictionary } from './armouryMenu/armouryMenu';
 
 interface IProperties {
     width?: number
@@ -34,7 +32,8 @@ interface IProps extends IProperties, ICallbacks {
 }
 
 interface IState extends IProperties, ICallbacks {
-    isFallback: boolean
+    isFallback?: boolean
+    isWeaponAdded?: boolean
 }
 
 export class Armoury extends React.Component<IProps, IState> {
@@ -47,11 +46,15 @@ export class Armoury extends React.Component<IProps, IState> {
     point;
     weapon;
     playerFocus = new THREE.Group;
+    circleLights;
+    circleLightRadius = 20;
+    defaultView = "gatling-gun";
 
     public constructor(props?: any, context?: any) {
         super(props, context);
         this.state = {
-            isFallback: false
+            isFallback: false,
+            isWeaponAdded: false
         };
     }
 
@@ -116,7 +119,7 @@ export class Armoury extends React.Component<IProps, IState> {
 
     initCamera() {
         this.camera = new THREE.PerspectiveCamera( 45, this.props.width / this.props.height, 1, 4000 );
-        this.camera.position.set(0, 16, 50);
+        this.camera.position.set(0, 10, 50);
     }
 
     initScene() {
@@ -124,7 +127,14 @@ export class Armoury extends React.Component<IProps, IState> {
     }
 
     initLighting() {
-        this.point = new THREE.PointLight( 0xffffff, 1 );
+        const lights = [ null, null, null, null ];
+        this.circleLights = lights.map(light => {
+            light = new THREE.PointLight( 0xffffff, 0.15 );
+            this.scene.add(light);
+            return light
+        });
+        //player lights
+        this.point = new THREE.PointLight( 0xffffff, 0 );
         this.playerFocus.add(this.point);
     }
 
@@ -146,14 +156,18 @@ export class Armoury extends React.Component<IProps, IState> {
 
         const key = viewPath
                     ?   viewPath
-                    :   "gatling-gun";
+                    :   this.defaultView;
 
         this.weapon = armouryMenuDictionary[key].component;
         this.weapon.assemble();
-        let weaponObj = this.weapon.render();
-        weaponObj.name =  "weapon";
+        this.weapon = this.weapon.render();
+        this.weapon.name =  "weapon";
 
-        this.scene.add(weaponObj);
+        this.scene.add(this.weapon);
+
+        this.setState({
+            isWeaponAdded: true
+        })
     }
 
     animate() {
@@ -163,30 +177,32 @@ export class Armoury extends React.Component<IProps, IState> {
 
     renderMotion() {
         const { keysPressed } = this.props;
+        const { isWeaponAdded } = this.state;
 
         const diffPosX = playerPositionX(keysPressed, this.playerFocus.rotation.y);
         const diffPosY = 0;
         const diffPosZ = playerPositionZ(keysPressed, this.playerFocus.rotation.y);
 
-        const diffRotX = playerRotationX(keysPressed);
         const diffRotY = playerRotationY(keysPressed);
-        const diffRotZ = 0;
 
         this.playerFocus.position.x+=diffPosX;
         this.playerFocus.position.y+=diffPosY;
         this.playerFocus.position.z+=diffPosZ;
 
-        // this.playerFocus.rotation.x+=diffRotX;
         this.playerFocus.rotation.y+=diffRotY;
-        // this.playerFocus.rotation.z+=diffRotZ;
 
-        const isFiringKey = isFiring(keysPressed);
+        if (isWeaponAdded) {
 
-        const sourcePos = this.playerFocus.position;
+            this.weapon.rotation.y+=0.1;
 
-        // this.weapon.fire(isFiringKey, sourcePos);
+            this.circleLights.forEach((light, i) => {
+                const r = (this.circleLightRadius - Math.cos(this.weapon.rotation.y) * this.circleLightRadius * 0.5);
+                light.position.x = Math.sin(-this.weapon.rotation.y + Math.PI * 2 / this.circleLights.length * (i + 1)) * r;
+                light.position.y = r;
+                light.position.z = Math.cos(-this.weapon.rotation.y + Math.PI * 2 / this.circleLights.length * (i + 1)) * r;
+            });
 
-        this.point.intensity = isFiringKey ? 1 : 0;
+        }
 
         this.renderer.render( this.scene, this.camera );
     }

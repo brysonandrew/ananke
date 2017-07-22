@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { fontSize } from "../../../../data/helpers/breakPoints";
+import {colors} from '../../../../data/themeOptions';
 
 interface IProps {
     isMobile: boolean
@@ -20,12 +21,13 @@ export class IntroHeading extends React.Component<IProps, IState> {
 
         const styles = {
             helloHeading: {
+                color: colors.wht,
                 fontSize: fontSize.XXL(isMobile, isTablet, isLaptop)
             }
         } as any;
         return (
             <div style={ styles.helloHeading }>
-                <pre>{`P R E S S  A N Y  K E Y  T O  B E G I N`}</pre>
+                <pre>{`code bro 3D.`}</pre>
             </div>
         );
     }

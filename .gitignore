@@ -273,3 +273,4 @@ fabric.properties
 
 # Ignore unused components
 /unusedComponents
+/componentGraveyard/

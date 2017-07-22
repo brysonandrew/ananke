@@ -1,7 +1,7 @@
 import { toPath } from "../../../../../data/helpers/toPath";
 import { IDictionary, IProject } from "../../../../../data/models";
-import { GatlingGun } from '../GatlingGun/gatlingGun';
-import { Uzi } from '../Uzi/uzi';
+import { GatlingGun } from '../weapons/GatlingGun/gatlingGun';
+import { Uzi } from '../weapons/Uzi/uzi';
 
 function Project(name, component) {
     this.name = name;

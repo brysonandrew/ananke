@@ -109,8 +109,12 @@ export class Particles extends React.Component<IProps, IState> {
     }
 
     initCamera() {
-        this.camera = new THREE.PerspectiveCamera( 45, this.props.width / this.props.height, 1, 4000 );
-        this.camera.position.set(0, 16, 50);
+        this.camera = new THREE.PerspectiveCamera(
+            45,
+            this.props.width / this.props.height,
+            1,
+            4000
+        );
     }
 
     initScene() {
@@ -126,6 +130,7 @@ export class Particles extends React.Component<IProps, IState> {
     initAssets() {
 
         this.playerFocus.add(this.camera);
+        this.playerFocus.position.set(0, 10, 100);
         this.playerFocus.rotation.order = "YXZ";
         this.scene.add(this.playerFocus);
 
@@ -163,45 +168,32 @@ export class Particles extends React.Component<IProps, IState> {
     }
 
     renderMotion() {
-        const { keysPressed, savedParams } = this.props;
+        const { keysPressed } = this.props;
 
-        const diffPosX = playerPositionX(keysPressed, this.playerFocus.rotation.y);
-        const diffPosY = 0;
-        const diffPosZ = playerPositionZ(keysPressed, this.playerFocus.rotation.y);
+        const rotX = playerRotationX(keysPressed);
+        const rotY = playerRotationY(keysPressed);
 
-        const diffRotX = playerRotationX(keysPressed);
-        const diffRotY = playerRotationY(keysPressed);
-        const diffRotZ = 0;
+        const posX = playerPositionX(keysPressed, this.playerFocus.rotation.y);
+        const posZ = playerPositionZ(keysPressed, this.playerFocus.rotation.y);
 
-        this.playerFocus.position.x+=diffPosX;
-        this.playerFocus.position.y+=diffPosY;
-        this.playerFocus.position.z+=diffPosZ;
+        this.playerFocus.rotation.x+=rotX;
+        this.playerFocus.rotation.y+=rotY;
 
-        this.playerFocus.rotation.x+=diffRotX;
-        this.playerFocus.rotation.y+=diffRotY;
-        this.playerFocus.rotation.z+=diffRotZ;
-
-        const isFiringKey = isFiring(keysPressed);
+        this.playerFocus.position.x+=posX;
+        this.playerFocus.position.z+=posZ;
 
         this.particles.animate();
-
-        // this.point.intensity = isFiringKey ? 1 : 0;
 
         this.renderer.render( this.scene, this.camera );
     }
 
     render(): JSX.Element {
-        const styles = {
-            particles__menu: {
-
-            }
-        };
+        const styles = {particles__menu: {}};
         return (
             this.state.isFallback
-            ?  <CenteredText
-                    content={"Unable to view due to browser or browser settings. Try another browser or reconfigure your current browser."}
-                />
-            :   null
+                &&  <CenteredText
+                        content={"Unable to view due to browser or browser settings. Try another browser or reconfigure your current browser."}
+                    />
         );
     }
 }
